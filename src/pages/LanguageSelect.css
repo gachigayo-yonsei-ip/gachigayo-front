@@ -1,0 +1,56 @@
+.language-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.language-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 2px solid transparent; /* 기본 상태에서는 테두리 감추기 */
+  background: #fff;
+  color: #1673ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  position: relative;
+}
+
+.language-btn:hover {
+  background-color: #f0f8ff;
+}
+
+.language-btn img.flag-img {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+}
+
+.language-btn span {
+  flex: 1;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.language-btn.selected {
+  background-color: #eee;
+  border-color: #aaa; /* 선택되면 회색 테두리 표시 */
+  color: #555;
+}
+
+.language-btn.selected span {
+  color: #555;
+}
+
+.language-btn .check-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.cta-btn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}

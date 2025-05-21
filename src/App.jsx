@@ -1,14 +1,17 @@
-import { useState } from 'react'
-
+import { Routes, Route } from 'react-router-dom'
 import './App.css'
+import Onboarding from './pages/Onboarding'
+import LanguageSelect from './pages/LanguageSelect'
+import Lobby from './pages/lobby'
 
 function App() {
-  
-
   return (
-    <div className="App">
-      <h1>Hello World</h1>
-      </div>
+    <Routes>
+      <Route path="/language" element={<LanguageSelect />} />
+      <Route path="/lobby" element={<Lobby />} />
+      {/* 기본 경로는 Onboarding 페이지 */}
+      <Route path="*" element={<Onboarding />} />
+    </Routes>
   )
 }
 
