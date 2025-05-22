@@ -68,21 +68,26 @@ export default function Lobby() {
       </div>
 
       <nav className="bottom-nav">
-        <button className="nav-btn">
-          <img src="/favorite.svg" alt="Favorite" />
-        </button>
-        <button className="nav-btn">
-          <img src="/icnCompas.png" alt="Compass" />
-        </button>
-        <button className="nav-btn center-btn">
-          <img src="/plus.png" alt="Plus" />
-        </button>
+        
+        {/*나중에 favorite이랑 language 페이지 구현하고 나면 버튼 클릭 시 진하게 바꿔지게 할 예정*/}
         <button className="nav-btn">
           <img src="/maps.png" alt="Maps" />
+          <p>Maps</p>
+        </button>
+        <button className="nav-btn">
+          <img src="/favorite.svg" alt="Favorite" />
+          <p>Favorite</p>
         </button>
         <button className="nav-btn">
           <img src="/menu alt.png" alt="Menu" />
+          <p>Language</p>
         </button>
+        {/*이 두 버튼들은 위로 옮겨질 예정 <button className="nav-btn">
+          <img src="/icnCompas.png" alt="Compass" />
+        </button>*/}
+        {/*<button className="nav-btn center-btn">
+          <img src="/plus.png" alt="Plus" />
+        </button>*/}
       </nav>
     </div>
   )

@@ -33,6 +33,14 @@
   transition: background-color 0.2s;
 }
 
+.nav-btn p {
+  margin: 0;
+  padding: 0;
+  line-height: 1; /* 필요 시 줄 높이 조절 */
+  color: grey;
+  font-size: smaller;
+}
+
 .nav-btn:active {
   background-color: #f0f0f0;
 }
