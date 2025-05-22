@@ -75,7 +75,7 @@ export default function Lobby() {
           <p>Maps</p>
         </button>
         <button className="nav-btn">
-          <img src="/favorite.svg" alt="Favorite" />
+          <img src="/favorite.svg" style={{ width: 22, height: 22 }} alt="Favorite" />
           <p>Favorite</p>
         </button>
         <button className="nav-btn">
