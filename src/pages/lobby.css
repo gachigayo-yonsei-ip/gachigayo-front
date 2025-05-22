@@ -41,6 +41,14 @@
   font-size: smaller;
 }
 
+#nav-btn-p-black {
+  margin: 0;
+  padding: 0;
+  line-height: 1; /* 필요 시 줄 높이 조절 */
+  color: black;
+  font-size: smaller;
+}
+
 .nav-btn:active {
   background-color: #f0f0f0;
 }
@@ -49,6 +57,7 @@
   width: 28px;
   height: 28px;
 }
+
 
 .center-btn {
   width: 50px;

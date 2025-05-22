@@ -69,13 +69,13 @@ export default function Lobby() {
 
       <nav className="bottom-nav">
         
-        {/*나중에 favorite이랑 language 페이지 구현하고 나면 버튼 클릭 시 진하게 바꿔지게 할 예정*/}
+        {/*나중에 favorite이랑 language 페이지도 구현하고 나면 버튼 클릭 시 진하게 바꿔지게 할 예정*/}
         <button className="nav-btn">
-          <img src="/maps.png" alt="Maps" />
-          <p>Maps</p>
+          <img src="/maps_black.png" alt="Maps" /> {/*~~_black.png로 바꾸기*/}
+          <p id = "nav-btn-p-black">Maps</p> {/*id = "nav-btn-p-black" 할당*/}
         </button>
         <button className="nav-btn">
-          <img src="/favorite.svg" style={{ width: 22, height: 22 }} alt="Favorite" />
+          <img src="/favorite.svg" style={{ width: 23, height: 23 }} alt="Favorite" />
           <p>Favorite</p>
         </button>
         <button className="nav-btn">
