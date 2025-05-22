@@ -1,0 +1,18 @@
+/* src/components/BottomSheet.css */
+
+.rsbs-backdrop {
+  display: none; /* Non-modal */
+}
+
+.rsbs-sheet {
+  z-index: 1000 !important; /* 지도보다 위 */
+  border-radius: 16px 16px 0 0;
+}
+
+.handlebar {
+  width: 50px;
+  height: 6px;
+  background-color: #ccc;
+  border-radius: 3px;
+  margin: 8px auto;
+}
