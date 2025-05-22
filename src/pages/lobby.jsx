@@ -6,6 +6,7 @@ import CustomBottomSheet from '../components/BottomSheet' // BottomSheet 컴포�
 export default function Lobby() {
   const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 })
   const [places, setPlaces] = useState([])
+  const [sheetTopOffset, setSheetTopOffset] = useState(200) // 바텀 시트 위치 저장용 상태
 
   // ① 사용자 현재 위치 가져오기
   useEffect(() => {
@@ -67,9 +68,10 @@ export default function Lobby() {
           ))}
         </Map>
       </div>
+
       <CustomBottomSheet>
         <div style={{ padding: '16px' }}>
-          <h3>Nearby Places</h3>
+          <h1>Nearby Places</h1>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {places.map((place) => (
               <li key={place.id} style={{ marginBottom: '8px' }}>
@@ -79,12 +81,12 @@ export default function Lobby() {
           </ul>
         </div>
       </CustomBottomSheet>
-      
+
       <nav className="bottom-nav">
         {/*나중에 favorite이랑 language 페이지도 구현하고 나면 버튼 클릭 시 진하게 바꿔지게 할 예정*/}
         <button className="nav-btn">
           <img src="/maps_black.png" alt="Maps" /> {/*~~_black.png로 바꾸기*/}
-          <p id = "nav-btn-p-black">Maps</p> {/*id = "nav-btn-p-black" 할당*/}
+          <p id="nav-btn-p-black">Maps</p> {/*id = "nav-btn-p-black" 할당*/}
         </button>
         <button className="nav-btn">
           <img src="/favorite.svg" style={{ width: 23, height: 23 }} alt="Favorite" />
