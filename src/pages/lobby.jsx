@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Map, MapMarker } from 'react-kakao-maps-sdk'
 import './lobby.css'
+import CustomBottomSheet from '../components/BottomSheet' // BottomSheet 컴포넌트 import
 
 export default function Lobby() {
   const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 })
@@ -66,9 +67,20 @@ export default function Lobby() {
           ))}
         </Map>
       </div>
-
+      <CustomBottomSheet>
+        <div style={{ padding: '16px' }}>
+          <h3>Nearby Places</h3>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {places.map((place) => (
+              <li key={place.id} style={{ marginBottom: '8px' }}>
+                {place.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CustomBottomSheet>
+      
       <nav className="bottom-nav">
-        
         {/*나중에 favorite이랑 language 페이지도 구현하고 나면 버튼 클릭 시 진하게 바꿔지게 할 예정*/}
         <button className="nav-btn">
           <img src="/maps_black.png" alt="Maps" /> {/*~~_black.png로 바꾸기*/}
