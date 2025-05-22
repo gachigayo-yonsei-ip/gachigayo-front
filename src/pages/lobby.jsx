@@ -69,7 +69,7 @@ export default function Lobby() {
 
       <nav className="bottom-nav">
         <button className="nav-btn">
-          <img src="/favorite.png" alt="Favorite" />
+          <img src="/favorite.svg" alt="Favorite" />
         </button>
         <button className="nav-btn">
           <img src="/icnCompas.png" alt="Compass" />
