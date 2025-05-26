@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { Map, MapMarker } from 'react-kakao-maps-sdk'
-import './lobby.css'
-import CustomBottomSheet from '../components/BottomSheet'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'; // useMemo 추가
+import { Map, MapMarker } from 'react-kakao-maps-sdk';
+import './lobby.css';
+import CustomBottomSheet from '../components/BottomSheet';
 
 const ITEMS_PER_PAGE = 20;
 
-// Haversine 공식으로 두 지점 간 거리 계산 (km 단위)
+// Haversine 공식 (생략)
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // 지구 반지름 (km)
   const dLat = deg2rad(lat2 - lat1);
@@ -22,31 +22,30 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+
 export default function Lobby() {
-  // 기존 상태
-  const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 })
-  const [allPlaces, setAllPlaces] = useState([])
-  const [sortedPlaces, setSortedPlaces] = useState([])
-  const [displayedPlaces, setDisplayedPlaces] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedPlace, setSelectedPlace] = useState(null)
-  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  // 기존 상태 (생략)
+  const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 });
+  const [allPlaces, setAllPlaces] = useState([]);
+  const [sortedPlaces, setSortedPlaces] = useState([]);
+  const [displayedPlaces, setDisplayedPlaces] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
-  });  // ← 여기에 세미콜론 하나만, 불필요한 ')' 제거
+  });
 
-  // ★ 즐겨찾기 뷰 모드 토글
   const [viewFavorites, setViewFavorites] = useState(false);
-  // ★ 즐겨찾기 페이지 + 페이지별 표시 리스트
   const [favPage, setFavPage] = useState(1);
-  const [displayedFavorites, setDisplayedFavorites] = useState([])
+  const [displayedFavorites, setDisplayedFavorites] = useState([]);
 
-  const bottomSheetContentRef = useRef(null)
+  const bottomSheetContentRef = useRef(null); // 스크롤 컨테이너 ref
+  const observer = useRef(); // Intersection Observer ref
 
-
-  // ① 사용자 현재 위치 가져오기
+  // ① 사용자 현재 위치 가져오기 (생략)
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -63,7 +62,7 @@ export default function Lobby() {
     }
   }, []);
 
-  // ② 서버에서 장소 목록(fetch) 받아오기
+  // ② 서버에서 장소 목록(fetch) 받아오기 (생략)
   useEffect(() => {
     fetch('http://localhost:3000/places')
       .then((res) => {
@@ -82,7 +81,7 @@ export default function Lobby() {
       });
   }, []);
 
-  // ③ allPlaces 또는 coords가 변경되면 거리순으로 정렬
+  // ③ allPlaces 또는 coords가 변경되면 거리순으로 정렬 (생략)
   useEffect(() => {
     if (allPlaces.length > 0 && coords) {
       const sorted = [...allPlaces]
@@ -92,99 +91,148 @@ export default function Lobby() {
         }))
         .sort((a, b) => a.distance - b.distance);
       setSortedPlaces(sorted);
-      setCurrentPage(1); // 정렬이 바뀌면 첫 페이지부터 다시 보여줌
+      setCurrentPage(1); 
+      setFavPage(1); // 즐겨찾기 페이지도 초기화
     }
   }, [allPlaces, coords]);
 
   // ④ sortedPlaces 또는 currentPage가 변경되면 displayedPlaces 업데이트
   useEffect(() => {
-    if (sortedPlaces.length > 0) {
+    if (sortedPlaces.length > 0 && !viewFavorites) { // Maps 뷰일 때만
       const newDisplayedPlaces = sortedPlaces.slice(0, currentPage * ITEMS_PER_PAGE);
       setDisplayedPlaces(newDisplayedPlaces);
+      if (isLoading && newDisplayedPlaces.length > displayedPlaces.length) { // 데이터가 실제로 추가되었을 때
+        setIsLoading(false);
+      } else if (isLoading && newDisplayedPlaces.length === displayedPlaces.length && displayedPlaces.length === sortedPlaces.length) { // 더 이상 로드할 데이터가 없을 때
+        setIsLoading(false);
+      }
     }
-  }, [sortedPlaces, currentPage]);
+  }, [sortedPlaces, currentPage, viewFavorites, isLoading, displayedPlaces.length]); // isLoading, displayedPlaces.length 추가
 
-  // favorites 변경 시 localStorage에 저장
+  // favorites 변경 시 localStorage에 저장 (생략)
   useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites))
-  }, [favorites])
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
 
-  // ★ favoritePlaces 전체
-  const favoritePlaces = sortedPlaces.filter(p => favorites.includes(p.id))
+  // ★ favoritePlaces 전체 (useMemo 사용)
+  const favoritePlaces = useMemo(() => {
+    return sortedPlaces.filter(p => favorites.includes(p.id));
+  }, [sortedPlaces, favorites]);
 
   // ★ favoritePlaces를 페이지 단위로 자르기
   useEffect(() => {
-    if (viewFavorites) {
-      const sliceEnd = favPage * ITEMS_PER_PAGE
-      setDisplayedFavorites(favoritePlaces.slice(0, sliceEnd))
+    if (viewFavorites) { // Favorites 뷰일 때만
+      const sliceEnd = favPage * ITEMS_PER_PAGE;
+      const newDisplayedFavorites = favoritePlaces.slice(0, sliceEnd);
+      setDisplayedFavorites(newDisplayedFavorites);
+      if (isLoading && newDisplayedFavorites.length > displayedFavorites.length) { // 데이터가 실제로 추가되었을 때
+        setIsLoading(false);
+      } else if (isLoading && newDisplayedFavorites.length === displayedFavorites.length && displayedFavorites.length === favoritePlaces.length) { // 더 이상 로드할 데이터가 없을 때
+        setIsLoading(false);
+      }
     }
-  }, [favoritePlaces, favPage, viewFavorites])
+  }, [favoritePlaces, favPage, viewFavorites, isLoading, displayedFavorites.length]); // isLoading, displayedFavorites.length 추가
 
-  // load more: maps vs favorites
+
   const loadMorePlaces = useCallback(() => {
-    if (isLoading) return
+    if (isLoading) return;
+
+    // 로딩 시작 시 isLoading을 true로 설정
+    setIsLoading(true);
 
     if (viewFavorites) {
-      if (displayedFavorites.length >= favoritePlaces.length) return
-      setIsLoading(true)
-      setFavPage(p => p + 1)
+      if (displayedFavorites.length < favoritePlaces.length) {
+        setFavPage(p => p + 1);
+      } else {
+        setIsLoading(false); // 더 이상 로드할 즐겨찾기가 없으면 로딩 중단
+      }
     } else {
-      if (displayedPlaces.length >= sortedPlaces.length) return
-      setIsLoading(true)
-      setCurrentPage(p => p + 1)
+      if (displayedPlaces.length < sortedPlaces.length) {
+        setCurrentPage(p => p + 1);
+      } else {
+        setIsLoading(false); // 더 이상 로드할 장소가 없으면 로딩 중단
+      }
     }
-
-    setTimeout(() => setIsLoading(false), 500)
+    // setTimeout(() => setIsLoading(false), 300); // 이 부분 제거
   }, [
     isLoading,
     viewFavorites,
-    displayedPlaces.length, sortedPlaces.length,
-    displayedFavorites.length, favoritePlaces.length
-  ])
+    displayedPlaces.length,
+    sortedPlaces.length,
+    displayedFavorites.length,
+    favoritePlaces.length
+  ]);
 
-  const handlePlaceClick = place => {
-    setSelectedPlace(place)
-    setIsDetailViewOpen(true)
-  }
-  const handleCloseDetailView = () => {
-    setIsDetailViewOpen(false)
-    setSelectedPlace(null)
-  }
-  const handleToggleFavorite = id => {
+  // 마지막 요소를 감지하는 ref 콜백
+  const lastPlaceElementRef = useCallback(node => {
+    if (isLoading) return; // isLoading이 true이면 관찰 중지
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !isLoading) { // isLoading이 false일 때만 실행
+        const currentList = viewFavorites ? displayedFavorites : displayedPlaces;
+        const totalList = viewFavorites ? favoritePlaces : sortedPlaces;
+        if (currentList.length < totalList.length) {
+          console.log('📦 마지막 요소 감지: loadMorePlaces 호출');
+          loadMorePlaces();
+        }
+      }
+    }, {
+      root: bottomSheetContentRef.current,
+      threshold: 1.0,
+      rootMargin: "0px 0px -30px 0px"
+    });
+
+    if (node) observer.current.observe(node);
+  }, [isLoading, loadMorePlaces, viewFavorites, displayedFavorites, favoritePlaces, displayedPlaces, sortedPlaces]); // isLoading을 의존성 배열에 추가
+
+
+  const handlePlaceClick = place => { // (생략)
+    setSelectedPlace(place);
+    setIsDetailViewOpen(true);
+  };
+  const handleCloseDetailView = () => { // (생략)
+    setIsDetailViewOpen(false);
+    setSelectedPlace(null);
+  };
+  const handleToggleFavorite = id => { // (생략)
     setFavorites(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    )
-  }
+    );
+  };
 
-  // ★ 양쪽 뷰 모두에서 스크롤로 추가 로딩
-  const handleSheetScroll = () => {
-    if (!bottomSheetContentRef.current || isLoading) return
-    const { scrollTop, scrollHeight, clientHeight } = bottomSheetContentRef.current
-    if (scrollHeight > clientHeight && scrollTop + clientHeight >= scrollHeight - 5) {
-      loadMorePlaces()
-    }
-  }
+  // 기존 handleSheetScroll 함수는 제거 또는 주석 처리
+  // const handleSheetScroll = () => { ... }
 
-  // ★ 보여줄 리스트 분기
-  const placesToShow = viewFavorites ? displayedFavorites : displayedPlaces
+  const placesToShow = viewFavorites ? displayedFavorites : displayedPlaces;
 
   return (
     <div className="lobby-wrap">
       <div className="lobby-content">
+        {/* 지도 (생략) */}
         <Map center={coords} level={3} style={{ width: '100%', height: '100%' }}>
-          <MapMarker position={coords} />
-          {placesToShow.map(place => (
-            <MapMarker
-              key={place.id}
-              position={{ lat: place.lat, lng: place.lon }}
-              image={{ src: '/other-marker.png', size: { width: 32, height: 32 } }}
-              onClick={() => handlePlaceClick(place)}
-            />
-          ))}
+          <MapMarker position={coords} /> {/* 현재 위치 마커 */}
+          {placesToShow.map(place => {
+            const isFavorite = favorites.includes(place.id);
+            const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png'; // 즐겨찾기 여부에 따라 마커 이미지 변경
+
+            return (
+              <MapMarker
+                key={place.id}
+                position={{ lat: place.lat, lng: place.lon }}
+                image={{ 
+                  src: markerImageSrc, 
+                  size: { width: 32, height: 32 } 
+                }}
+                onClick={() => handlePlaceClick(place)}
+              />
+            );
+          })}
         </Map>
       </div>
 
       {isDetailViewOpen && selectedPlace && (
+        // 상세 뷰 (생략)
         <div className="place-detail-overlay">
           <div className="place-detail-content">
             <h2>{selectedPlace.name}</h2>
@@ -192,71 +240,98 @@ export default function Lobby() {
             <p><strong>거리:</strong> {selectedPlace.distance ? selectedPlace.distance.toFixed(2) + ' km' : 'N/A'}</p>
             {selectedPlace.available_time && <p><strong>운영시간:</strong> {selectedPlace.available_time}</p>}
             {selectedPlace.tag && <p><strong>태그:</strong> {selectedPlace.tag.join(', ')}</p>}
-            {/* 필요에 따라 더 많은 정보 추가 */}
             <button onClick={handleCloseDetailView} className="close-detail-btn">닫기</button>
           </div>
         </div>
       )}
 
-      <CustomBottomSheet>
+      {/* CustomBottomSheet에 onScroll prop 제거 */}
+      <CustomBottomSheet scrollRef={bottomSheetContentRef}>
         <div
           ref={bottomSheetContentRef}
-          onScroll={handleSheetScroll}
           className="bottom-sheet-scroll-content"
+          // onScroll prop 제거
         >
           <h1>{viewFavorites ? 'Your Favorites' : 'Nearby Places'}</h1>
 
           {placesToShow.length > 0 ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>
-              {placesToShow.map(place => (
-                <li key={place.id} style={{ marginBottom: '10px' }}>
-                  <button
-                    className={`place-button ${selectedPlace?.id === place.id ? 'selected' : ''}`}
-                    onClick={() => handlePlaceClick(place)}
-                  >
-                    <img
-                      src={favorites.includes(place.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
-                      alt="favorite"
-                      className="favorite-icon"
-                      onClick={e => {
-                        e.stopPropagation()
-                        handleToggleFavorite(place.id)
-                      }}
-                    />
-                    <strong>{place.name}</strong>
-                    {place.distance && (
-                      <span style={{ fontSize: '0.8em', color: 'grey', marginLeft: '10px' }}>
-                        ({place.distance.toFixed(2)} km)
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
+              {placesToShow.map((place, index) => {
+                // 리스트의 마지막 요소에 ref를 연결
+                if (placesToShow.length === index + 1) {
+                  return (
+                    <li ref={lastPlaceElementRef} key={place.id} style={{ marginBottom: '10px' }}>
+                      <button
+                        className={`place-button ${selectedPlace?.id === place.id ? 'selected' : ''}`}
+                        onClick={() => handlePlaceClick(place)}
+                      >
+                        <img
+                          src={favorites.includes(place.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
+                          alt="favorite"
+                          className="favorite-icon"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleToggleFavorite(place.id);
+                          }}
+                        />
+                        <strong>{place.name}</strong>
+                        {place.distance && !viewFavorites && ( // 즐겨찾기 뷰에서는 거리 숨김 (선택 사항)
+                          <span style={{ fontSize: '0.8em', color: 'grey', marginLeft: '10px' }}>
+                            ({place.distance.toFixed(2)} km)
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                } else {
+                  return (
+                    <li key={place.id} style={{ marginBottom: '10px' }}>
+                      <button
+                        className={`place-button ${selectedPlace?.id === place.id ? 'selected' : ''}`}
+                        onClick={() => handlePlaceClick(place)}
+                      >
+                        <img
+                          src={favorites.includes(place.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
+                          alt="favorite"
+                          className="favorite-icon"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleToggleFavorite(place.id);
+                          }}
+                        />
+                        <strong>{place.name}</strong>
+                        {place.distance && !viewFavorites && (
+                          <span style={{ fontSize: '0.8em', color: 'grey', marginLeft: '10px' }}>
+                            ({place.distance.toFixed(2)} km)
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                }
+              })}
             </ul>
           ) : (
-            <p>{viewFavorites ? 'No favorites yet.' : 'Loading places...'}</p>
+            <p>{viewFavorites ? 'No favorites yet.' : (isLoading ? 'Loading places...' : 'No places found nearby.')}</p>
           )}
 
-          {/* 뷰별 로딩/끝 메시지 */}
-          {isLoading && <p>{viewFavorites ? 'Loading more favorites...' : 'Loading more places...'}</p>}
-          {placesToShow.length > 0 && placesToShow.length >=
-            (viewFavorites ? favoritePlaces.length : sortedPlaces.length) && (
-            <p>{viewFavorites ? 'All favorites loaded.' : 'All places loaded.'}</p>
-          )}
+          {isLoading && <p>Loading more...</p>}
+          {/* "All loaded" 메시지는 Intersection Observer가 더 이상 호출되지 않는 것으로 판단 가능 */}
         </div>
       </CustomBottomSheet>
 
+      {/* 하단 네비게이션 (생략) */}
       <nav className="bottom-nav">
         <button
           className={`nav-btn ${!viewFavorites ? 'selected' : ''}`}
-          onClick={() => setViewFavorites(false)}
+          onClick={() => { setViewFavorites(false); setCurrentPage(1); /* 페이지 초기화 */ }}
         >
           <img src="/maps_black.png" alt="Maps" />
           <p>Maps</p>
         </button>
         <button
           className={`nav-btn ${viewFavorites ? 'selected' : ''}`}
-          onClick={() => setViewFavorites(true)}
+          onClick={() => { setViewFavorites(true); setFavPage(1); /* 페이지 초기화 */}}
         >
           <img
             src={viewFavorites ? '/favorite_black.svg' : '/favorite.svg'}
@@ -271,5 +346,5 @@ export default function Lobby() {
         </button>
       </nav>
     </div>
-  )
+  );
 }

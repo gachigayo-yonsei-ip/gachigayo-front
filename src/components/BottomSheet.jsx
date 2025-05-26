@@ -3,7 +3,7 @@ import { BottomSheet } from 'react-spring-bottom-sheet'
 import 'react-spring-bottom-sheet/dist/style.css'
 import './BottomSheet.css'
 
-export default function CustomBottomSheet({ children }) {
+export default function CustomBottomSheet({ children, scrollRef }) {
   return (
     <BottomSheet
       open={true}
@@ -12,6 +12,7 @@ export default function CustomBottomSheet({ children }) {
       blocking={false}
       expandOnContentDrag
       scrollLocking={false}
+      scrollRef={scrollRef}
       springConfig={{ damping: 40, stiffness: 150 }}
     >
       {children}
