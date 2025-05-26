@@ -74,3 +74,122 @@
   filter: invert(1);
 }
 
+.place-button {
+  display: flex;
+  align-items: center;
+  width: 100%; /* 부모 요소의 전체 너비를 차지하도록 */
+  padding: 10px; /* LanguageSelect 버튼과 동일한 패딩 */
+  background: #fff; /* LanguageSelect 버튼과 동일한 배경색 */
+  color: #1673ff; /* LanguageSelect 버튼과 동일한 기본 텍스트 색상 */
+  border: 2px solid transparent; /* LanguageSelect 버튼처럼 기본 테두리 투명 */
+  border-radius: 8px; /* LanguageSelect 버튼과 동일한 모서리 둥글기 */
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s; /* LanguageSelect 버튼과 동일한 전환 효과 */
+  text-align: left; /* 텍스트 왼쪽 정렬 */
+  margin-bottom: 10px; /* 버튼 간의 하단 간격 */
+  position: relative; /* LanguageSelect 버튼처럼 내부 요소 위치 기준점 (필요시) */
+}
+
+.place-button:hover {
+  background-color: #f0f8ff; /* LanguageSelect 버튼과 동일한 호버 배경색 */
+}
+
+/* 선택된 장소 버튼 스타일 */
+.place-button.selected {
+  background-color: #e6f2ff; /* LanguageSelect의 selected와 유사한 배경색 또는 원하는 색상 */
+  border-color: #1673ff; /* LanguageSelect의 selected와 유사한 테두리 색상 또는 원하는 색상 */
+  color: #0056b3; /* 선택 시 텍스트 색상 변경 (선택 사항) */
+}
+
+.place-button.selected strong {
+  /* color: #0056b3; */ /* 필요시 strong 태그의 색상도 변경 */
+}
+
+.place-button.selected span {
+  /* color: #508ddb; */ /* 필요시 span 태그의 색상도 변경 */
+}
+
+
+/* 버튼 내부 장소 이름 스타일 */
+.place-button strong {
+  flex: 1; /* 장소 이름이 남은 공간을 모두 차지하도록 */
+  text-align: left;
+  font-size: 1rem; /* LanguageSelect 버튼의 텍스트 크기와 동일하게 */
+  font-weight: 500; /* LanguageSelect 버튼의 텍스트 두께와 동일하게 */
+}
+
+/* 버튼 내부 거리 표시 스타일 */
+.place-button span {
+  font-size: 0.8em; /* 기존 스타일 유지 또는 LanguageSelect의 보조 텍스트 스타일 참고 */
+  color: #777; /* LanguageSelect의 회색 텍스트와 유사하게 */
+  margin-left: 10px; /* 장소 이름과의 간격 */
+}
+
+.place-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000; /* BottomSheet보다 위에 오도록 */
+  padding: 20px;
+}
+
+.place-detail-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.place-detail-content h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.place-detail-content p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.close-detail-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+  background-color: #1673ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.close-detail-btn:hover {
+  background-color: #135fcd;
+}
+
+/* BottomSheet 내부 스크롤 가능한 콘텐츠 영역 스타일 */
+.bottom-sheet-scroll-content {
+  padding: 16px; /* 내부 여백 */
+  overflow-y: auto; /* 내용이 넘칠 경우 스크롤바 표시 */
+  height: 100%; /* 부모(BottomSheet의 콘텐츠 영역) 높이를 100% 사용 */
+  box-sizing: border-box; /* padding과 border가 height 계산에 포함되도록 */
+}
+
+.bottom-sheet-scroll-content h1 {
+  text-align: left; /* 기본값으로 되돌리거나, 필요시 중앙 정렬 유지 */
+  margin-bottom: 20px;
+  font-size: 1.8rem; /* 필요시 조정 */
+  color: #333; /* 필요시 조정 */
+}
+
