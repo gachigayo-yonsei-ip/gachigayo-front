@@ -5,14 +5,16 @@ import './BottomSheet.css'
 
 export default function CustomBottomSheet({ children }) {
   return (
-      <BottomSheet
-        open={true}
-        snapPoints={({ minHeight, maxHeight }) => [200, 500]}
-        defaultSnap={({ snapPoints }) => snapPoints[0]}
-        blocking={false}
-        expandOnContentDrag
-      >
-          {children}
-      </BottomSheet>
+    <BottomSheet
+      open={true}
+      snapPoints={({ maxHeight }) => [0.25 * maxHeight, 0.6 * maxHeight, 0.9 * maxHeight]}
+      defaultSnap={({ snapPoints }) => snapPoints[1]}
+      blocking={false}
+      expandOnContentDrag
+      scrollLocking={false}
+      springConfig={{ damping: 40, stiffness: 150 }}
+    >
+      {children}
+    </BottomSheet>
   )
 }
