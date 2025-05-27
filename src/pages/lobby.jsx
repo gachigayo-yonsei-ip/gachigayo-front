@@ -231,7 +231,7 @@ export default function Lobby() {
                 position={{ lat: place.lat, lng: place.lon }}
                 image={{ 
                   src: markerImageSrc, 
-                  size: { width: 28, height: 28 } 
+                  size: { width: 28, height: 32 } 
                 }}
                 onClick={() => handlePlaceClick(place)}
               />
@@ -304,14 +304,25 @@ export default function Lobby() {
                   </button>
                 </li>
               );
-          
               return placesToShow.length === index + 1
                 ? <div ref={lastPlaceElementRef} key={place.id}>{listItem}</div>
                 : listItem;
             })}
           </ul>          
           ) : (
-            <p>{viewFavorites ? 'No favorites yet.' : (isLoading ? 'Loading places...' : 'No places found nearby.')}</p>
+            viewFavorites ? (
+              <div className="empty-state">
+                <div className="empty-icon-wrapper">
+                  <img src="/emptyHeart.svg" alt="No favorites" className="empty-icon" />
+                </div>
+                <h3 className="empty-title">You haven’t added any favorite places yet!</h3>
+                <p className="empty-subtext">Tap the bookmark icon to save places you like.</p>
+              </div>
+            ) : (
+              <p className="empty-message">
+                {isLoading ? 'Loading places...' : 'No places found nearby.'}
+              </p>
+            )
           )}
 
           {isLoading && <p>Loading more...</p>}

@@ -142,7 +142,6 @@
 .favorite-icon {
   width: 20px;
   height: 20px;
-  margin-right: 8px;
   cursor: pointer;
 }
 
@@ -231,7 +230,7 @@
   background: #fff;
   border-radius: 12px;
   padding: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   position: relative;
   transition: border 0.2s ease;
 }
@@ -286,7 +285,52 @@
   border: none;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  padding: 10px;
+  padding-top: 10px;
+  padding-right: 10px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  
   cursor: pointer;
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* ✅ 이거 꼭 필요! */
+  justify-content: center;
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.empty-icon-wrapper {
+  background-color: #dee0e3;
+  width: 80px; /* ✅ 정사각형 */
+  height: 80px;
+  border-radius: 50%; /* ✅ 완전한 원형 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+
+.empty-icon {
+  width: 32px;
+  height: 32px;
+  fill: white;         /* ✅ 아이콘 내부 색상 */
+  stroke: none;        /* ✅ 외곽선 제거 */
+}
+
+
+.empty-message {
+  text-align: center;
+  color: #666;
+  padding: 40px 20px;
+  font-size: 0.95rem;
+}
+
+/* ✅ 텍스트 가운데 정렬 추가 */
+.empty-title,
+.empty-subtext {
+  text-align: center;
+}
