@@ -211,7 +211,16 @@ export default function Lobby() {
       <div className="lobby-content">
         {/* 지도 (생략) */}
         <Map center={coords} level={3} style={{ width: '100%', height: '100%' }}>
-          <MapMarker position={coords} /> {/* 현재 위치 마커 */}
+          {/* 현재 위치 마커 */}
+          <MapMarker
+            position={coords}
+            image={{
+              src: "/myLocationMarker.svg",           
+              size: { width: 40, height: 40 },    
+              options: { offset: { x: 16, y: 32 } } 
+            }}
+            title="현재 위치"
+          />
           {placesToShow.map(place => {
             const isFavorite = favorites.includes(place.id);
             const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png'; // 즐겨찾기 여부에 따라 마커 이미지 변경
@@ -222,7 +231,7 @@ export default function Lobby() {
                 position={{ lat: place.lat, lng: place.lon }}
                 image={{ 
                   src: markerImageSrc, 
-                  size: { width: 32, height: 32 } 
+                  size: { width: 28, height: 28 } 
                 }}
                 onClick={() => handlePlaceClick(place)}
               />
