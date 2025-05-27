@@ -255,62 +255,52 @@ export default function Lobby() {
           <h1>{viewFavorites ? 'Your Favorites' : 'Nearby Places'}</h1>
 
           {placesToShow.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {placesToShow.map((place, index) => {
-                // 리스트의 마지막 요소에 ref를 연결
-                if (placesToShow.length === index + 1) {
-                  return (
-                    <li ref={lastPlaceElementRef} key={place.id} style={{ marginBottom: '10px' }}>
-                      <button
-                        className={`place-button ${selectedPlace?.id === place.id ? 'selected' : ''}`}
-                        onClick={() => handlePlaceClick(place)}
-                      >
-                        <img
-                          src={favorites.includes(place.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
-                          alt="favorite"
-                          className="favorite-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleToggleFavorite(place.id);
-                          }}
-                        />
-                        <strong>{place.name}</strong>
-                        {place.distance && !viewFavorites && ( // 즐겨찾기 뷰에서는 거리 숨김 (선택 사항)
-                          <span style={{ fontSize: '0.8em', color: 'grey', marginLeft: '10px' }}>
-                            ({place.distance.toFixed(2)} km)
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                } else {
-                  return (
-                    <li key={place.id} style={{ marginBottom: '10px' }}>
-                      <button
-                        className={`place-button ${selectedPlace?.id === place.id ? 'selected' : ''}`}
-                        onClick={() => handlePlaceClick(place)}
-                      >
-                        <img
-                          src={favorites.includes(place.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
-                          alt="favorite"
-                          className="favorite-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleToggleFavorite(place.id);
-                          }}
-                        />
-                        <strong>{place.name}</strong>
-                        {place.distance && !viewFavorites && (
-                          <span style={{ fontSize: '0.8em', color: 'grey', marginLeft: '10px' }}>
-                            ({place.distance.toFixed(2)} km)
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                }
-              })}
-            </ul>
+            <ul className="place-list">
+            {placesToShow.map((place, index) => {
+              const isFavorite = favorites.includes(place.id);
+              const isSelected = selectedPlace?.id === place.id;
+          
+              const listItem = (
+                <li
+                  key={place.id}
+                  className={`place-item ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handlePlaceClick(place)}
+                >
+                  <img
+                    src="/default-thumbnail.jpg"
+                    alt={place.name}
+                    className="place-thumb"
+                  />
+                  <div className="place-meta">
+                    <h3 className="place-name">{place.name}</h3>
+                    <p className="place-desc">
+                      {place.tag && place.tag.length > 0
+                        ? place.tag.join(', ')
+                        : 'No description available'}
+                    </p>
+                    <p className="place-address">📍 {place.address}</p>
+                  </div>
+                  <button
+                    className="place-fav-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFavorite(place.id);
+                    }}
+                  >
+                    <img
+                      src={isFavorite ? '/fullHeart.png' : '/emptyHeart.svg'}
+                      alt="favorite"
+                      className="favorite-icon"
+                    />
+                  </button>
+                </li>
+              );
+          
+              return placesToShow.length === index + 1
+                ? <div ref={lastPlaceElementRef} key={place.id}>{listItem}</div>
+                : listItem;
+            })}
+          </ul>          
           ) : (
             <p>{viewFavorites ? 'No favorites yet.' : (isLoading ? 'Loading places...' : 'No places found nearby.')}</p>
           )}
