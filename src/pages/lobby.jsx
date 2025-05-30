@@ -210,7 +210,11 @@ export default function Lobby() {
     <div className="lobby-wrap">
       <div className="lobby-content">
         {/* 지도 (생략) */}
-        <Map center={coords} level={3} style={{ width: '100%', height: '100%' }}>
+        <Map 
+          center={coords} 
+          level={3} 
+          style={{ width: '100%', height: '100%' }} 
+        >
           {/* 현재 위치 마커 */}
           <MapMarker
             position={coords}
@@ -255,7 +259,7 @@ export default function Lobby() {
       )}
 
       {/* CustomBottomSheet에 onScroll prop 제거 */}
-      <CustomBottomSheet scrollRef={bottomSheetContentRef}>
+      <CustomBottomSheet ref={bottomSheetContentRef}>
         <div
           ref={bottomSheetContentRef}
           className="bottom-sheet-scroll-content"

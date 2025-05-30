@@ -30,7 +30,7 @@ export default function Onboarding() {
         <h2>Enable precise location</h2>
         <p className="subtitle">
           {perm === 'denied'
-            ? '권한이 거부되었습니다. 브라우저 설정에서 위치 접근을 허용해 주세요.'
+            ? 'Location access has been denied. Please enable it in your browser settings.'
             : 'To see attractions near you, please enable location access.'}
         </p>
       </div>

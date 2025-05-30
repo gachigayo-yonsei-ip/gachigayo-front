@@ -1,9 +1,9 @@
-// CustomBottomSheet.jsx
 import { BottomSheet } from 'react-spring-bottom-sheet'
 import 'react-spring-bottom-sheet/dist/style.css'
 import './BottomSheet.css'
+import { forwardRef } from 'react';
 
-export default function CustomBottomSheet({ children, scrollRef }) {
+const CustomBottomSheet = forwardRef(function CustomBottomSheet({ children }, ref) {
   return (
     <BottomSheet
       open={true}
@@ -12,10 +12,13 @@ export default function CustomBottomSheet({ children, scrollRef }) {
       blocking={false}
       expandOnContentDrag
       scrollLocking={false}
-      scrollRef={scrollRef}
-      springConfig={{ damping: 40, stiffness: 150 }}
     >
-      {children}
+      {/* ✅ 여기 div에 ref 연결 */}
+      <div ref={ref} className="bottom-sheet-scroll-content">
+        {children}
+      </div>
     </BottomSheet>
-  )
-}
+  );
+});
+
+export default CustomBottomSheet;
