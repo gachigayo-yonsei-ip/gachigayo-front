@@ -1,27 +1,28 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import './LanguageSelect.css'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './LanguageSelect.css';
 
 export default function LanguageSelect() {
-  const navigate = useNavigate()
-  const [selected, setSelected] = useState(null)
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState(null);
   const languages = [
     { code: 'en', name: 'English', flag: '/United States.png' },
     { code: 'kr', name: 'Korean', flag: '/South Korea.png' },
     { code: 'jp', name: 'Japanese', flag: '/Japan.png' },
     { code: 'ch', name: 'Chinese', flag: '/China.png' },
-  ]
+  ];
 
   const handleSelect = (lang) => {
-    setSelected(lang.code)
-  }
+    setSelected(lang.code);
+  };
 
   const handleContinue = () => {
     if (selected) {
-      console.log(`Continue with language: ${selected}`)
-      navigate('/lobby')
+      localStorage.setItem('appLanguage', selected);   // ✅ localStorage에 저장
+      console.log(`Continue with language: ${selected}`);
+      navigate('/lobby');  // ✅ 저장한 후 lobby로 이동
     }
-  }
+  };
 
   return (
     <div className="onboard-wrap">
@@ -47,5 +48,5 @@ export default function LanguageSelect() {
         Continue
       </button>
     </div>
-  )
+  );
 }

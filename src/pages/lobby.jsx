@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'; // useMemo 추가
+import { useNavigate } from 'react-router-dom';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import './lobby.css';
 import CustomBottomSheet from '../components/BottomSheet';
@@ -25,6 +26,8 @@ function deg2rad(deg) {
 
 export default function Lobby() {
   // 기존 상태 (생략)
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 });
   const [allPlaces, setAllPlaces] = useState([]);
   const [sortedPlaces, setSortedPlaces] = useState([]);
@@ -37,6 +40,7 @@ export default function Lobby() {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
+  const navigate = useNavigate();
 
   const [viewFavorites, setViewFavorites] = useState(false);
   const [favPage, setFavPage] = useState(1);
@@ -196,9 +200,25 @@ export default function Lobby() {
     setSelectedPlace(null);
   };
   const handleToggleFavorite = id => { // (생략)
+    const isAlreadyFavorite = favorites.includes(id); 
+
     setFavorites(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+
+    // ✅ 메시지 설정
+    if (isAlreadyFavorite) {
+      setToastMessage('💔 Removed from Favorites!');
+    } else {
+      setToastMessage('❤️ Added to Favorites!');
+    }
+
+    setShowToast(true);
+
+    // 1.5초 후에 토스트 끄기
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1500);  // 1.5초 맞춰줌
   };
 
   // 기존 handleSheetScroll 함수는 제거 또는 주석 처리
@@ -208,6 +228,11 @@ export default function Lobby() {
 
   return (
     <div className="lobby-wrap">
+      {showToast && (
+      <div className="toast">
+        {toastMessage}
+      </div>
+      )}
       <div className="lobby-content">
         {/* 지도 (생략) */}
         <Map 
@@ -354,7 +379,7 @@ export default function Lobby() {
           />
           <p>Favorite</p>
         </button>
-        <button className="nav-btn" onClick={() => {/* Language 모드로 */}}>
+        <button className="nav-btn" onClick={() => navigate('/language')}>
           <img src="/menu alt.png" alt="Menu" />
           <p>Language</p>
         </button>

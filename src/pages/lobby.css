@@ -284,7 +284,7 @@
   background: #fff;
   border: none;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   padding-top: 10px;
   padding-right: 10px;
   padding-bottom: 5px;
@@ -333,4 +333,38 @@
 .empty-title,
 .empty-subtext {
   text-align: center;
+}
+
+.toast {
+  position: fixed;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #323232;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  animation: slideDownUp 1.5s forwards;
+  z-index: 1000;
+  white-space: nowrap; 
+}
+
+@keyframes slideDownUp {
+  0% {
+    top: -60px;
+    opacity: 0;
+  }
+  20% {
+    top: 20px;
+    opacity: 1;
+  }
+  80% {
+    top: 20px;
+    opacity: 1;
+  }
+  100% {
+    top: -60px;
+    opacity: 0;
+  }
 }
