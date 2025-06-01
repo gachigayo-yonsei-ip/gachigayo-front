@@ -49,6 +49,13 @@ export default function Lobby() {
   const bottomSheetContentRef = useRef(null); // 스크롤 컨테이너 ref
   const observer = useRef(); // Intersection Observer ref
 
+  const mapRef = useRef();
+  const handleCenterToCurrentLocation = () => {
+    if (mapRef.current) {
+      mapRef.current.panTo(new kakao.maps.LatLng(coords.lat, coords.lng));
+    }
+  };
+
   // ① 사용자 현재 위치 가져오기 (생략)
   useEffect(() => {
     if (navigator.geolocation) {
@@ -239,6 +246,7 @@ export default function Lobby() {
           center={coords} 
           level={3} 
           style={{ width: '100%', height: '100%' }} 
+          ref={mapRef}
         >
           {/* 현재 위치 마커 */}
           <MapMarker
@@ -284,7 +292,15 @@ export default function Lobby() {
       )}
 
       {/* CustomBottomSheet에 onScroll prop 제거 */}
-      <CustomBottomSheet ref={bottomSheetContentRef}>
+      <CustomBottomSheet ref={bottomSheetContentRef} style={{ position: 'relative' }}>
+      <div className="sheet-buttons">
+        <button className="circle-button" onClick={handleCenterToCurrentLocation}>
+          <img src="/icnCompas.png" alt="Compass" />
+        </button>
+        <button className="circle-button" onClick={() => navigate('/add-place')}>
+          <img src="/plus.png" alt="Plus" />
+        </button>
+      </div>
         <div
           ref={bottomSheetContentRef}
           className="bottom-sheet-scroll-content"
