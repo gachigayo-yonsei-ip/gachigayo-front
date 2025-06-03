@@ -5,6 +5,7 @@
   max-width: 1024px;
   width: 100vw;
   margin: 0 auto;
+  overflow: hidden; /* 스켈레톤 로딩 시 전체 레이아웃 유지 */
 }
 
 /* 지도 영역: 하단 내비게이션(60px)을 제외한 높이만큼 채움 */
@@ -12,6 +13,7 @@
   width: 100%;
   height: calc(100vh - 60px);
   background-color: #f7f7f7;
+  position: relative; /* 자식 요소의 position: absolute 기준점 */
 }
 
 .marker-wrap {
@@ -202,32 +204,68 @@
   line-height: 1.6;
 }
 
-.close-detail-btn {
-  display: block;
+/* 상세 보기 내 공통 버튼 스타일 */
+.detail-action-btn {
+  display: flex; 
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 10px;
-  margin-top: 20px;
-  background-color: #1673ff;
-  color: white;
-  border: none;
+  padding: 10px 15px; /* 패딩 조정 */
+  margin-top: 10px; /* 버튼 간 간격 */
+  border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500; /* 글꼴 두께 추가 */
   cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s; /* color 전환 추가 */
+  box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 */
+}
+
+.detail-edit-btn {
+  background-color: #6c757d; /* 부드러운 회색 계열 */
+  color: white;
+  border-color: #6c757d;
+}
+.detail-edit-btn:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+}
+
+.detail-fav-btn {
+  background-color: #f8f9fa; /* 약간 밝은 회색 */
+  color: #343a40; /* 어두운 텍스트 색상 */
+  border-color: #ced4da; 
+}
+.detail-fav-btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+.detail-fav-btn .favorite-icon {
+  width: 18px; 
+  height: 18px;
+  margin-right: 8px; 
+}
+
+.close-detail-btn {
+  background-color: #007bff; /* 기본 파란색 */
+  color: white;
+  border-color: #007bff; 
 }
 
 .close-detail-btn:hover {
-  background-color: #135fcd;
+  background-color: #0056b3; /* 더 어두운 파란색 */
+  border-color: #0056b3;
 }
 
 
 .sheet-buttons {
   position: absolute;
-  top: -120px;
+  top: -120px; /* 바텀시트 상단으로부터의 상대 위치 조정 필요 */
   right: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  z-index: 10;
+  z-index: 10; /* 바텀시트 내용보다 위에 오도록 */
 }
 
 .circle-button {
@@ -252,18 +290,19 @@
 
 /* BottomSheet 내부 스크롤 가능한 콘텐츠 영역 스타일 */
 .bottom-sheet-scroll-content {
-  padding: 16px; /* 내부 여백 */
-  overflow-y: auto; /* 내용이 넘칠 경우 스크롤바 표시 */
-  height: 100%; /* 부모(BottomSheet의 콘텐츠 영역) 높이를 100% 사용 */
-  box-sizing: border-box; /* padding과 border가 height 계산에 포함되도록 */
+  padding: 16px; 
+  overflow-y: auto; 
+  height: 100%; 
+  box-sizing: border-box; 
+  padding-bottom: 76px; /* 하단 네비게이션 바(60px) + 추가 여유 공간(16px) */
 }
 
 .bottom-sheet-scroll-content h1 {
-  text-align: left; /* 기본값으로 되돌리거나, 필요시 중앙 정렬 유지 */
+  text-align: left; 
   margin-top: 0px; 
   margin-bottom: 20px;
-  font-size: 1.8rem; /* 필요시 조정 */
-  color: #333; /* 필요시 조정 */
+  font-size: 1.8rem; 
+  color: #333; 
 }
 
 .place-list {
@@ -301,7 +340,7 @@
 
 .place-meta {
   flex: 1;
-  min-width: 0;  /* ⬅️ 이것 중요: ellipsis 잘리게 하려면 필요 */
+  min-width: 0;  
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -348,51 +387,40 @@
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;   /* ✅ 이거 꼭 필요! */
+  align-items: center;   
   justify-content: center;
   text-align: center;
   padding: 30px 20px;
 }
 
 .empty-icon-wrapper {
-  background-color: #dee0e3;
-  width: 80px; /* ✅ 정사각형 */
+  background-color: #f0f0f0; 
+  width: 80px; 
   height: 80px;
-  border-radius: 50%; /* ✅ 완전한 원형 */
+  border-radius: 50%; 
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-
-
-
-/* 새로운 이모티콘 스타일 */
 .empty-icon-emoji {
-  font-size: 40px; /* 이모티콘 크기 조정 */
-  line-height: 1; /* 이모티콘이 중앙에 오도록 line-height 조정 */
-  color: #555; /* 이모티콘 색상 (기본 이모티콘 색상을 사용하거나 지정) */
+  font-size: 40px; 
+  line-height: 1; 
+  color: #555; 
 }
 
-.empty-title {
-  text-align: center;
-  font-size: 1.2rem; /* 제목 크기 조정 */
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.empty-subtext {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #666;
-}
 
 .empty-message {
   text-align: center;
   color: #666;
   padding: 40px 20px;
   font-size: 0.95rem;
+}
+
+.empty-title,
+.empty-subtext {
+  text-align: center;
 }
 
 .toast {
@@ -433,13 +461,13 @@
   position: relative;
   width: 40px;
   height: 40px;
-  z-index: 9999; /* 클러스터 위로 올라가게 */
+  z-index: 9999; 
 }
 
 .pulse-circle {
   width: 40px;
   height: 40px;
-  z-index: 9999; /* 클러스터 위로 올라가게 */
+  z-index: 9999; 
   border: 3px solid #1673ff;
   border-radius: 50%;
   background-color: rgba(22, 115, 255, 0.3);
@@ -473,48 +501,26 @@
   }
 }
 
-
-/* lobby.css 또는 해당 스타일 파일에 추가 */
+.detail-divider {
+  border: none; /* 기본 테두리 제거 */
+  border-bottom: 1px solid #acacac; /* 얇은 회색 구분선 */
+  margin: 15px 0; /* 위아래 여백 추가 */
+}
 
 .place-detail-content .detail-view-thumb {
   width: 100%;
-  max-height: 300px; /* 상세 뷰 이미지 최대 높이 */
+  max-height: 300px; 
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 15px;
 }
 
-.place-detail-content .detail-fav-btn {
-  display: flex; /* 아이콘과 텍스트 정렬 */
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 10px;
-  margin-top: 15px;
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.place-detail-content .detail-fav-btn:hover {
-  background-color: #e0e0e0;
-}
-
-.place-detail-content .detail-fav-btn .favorite-icon {
-  width: 18px; /* 아이콘 크기 조정 */
-  height: 18px;
-  margin-right: 8px; /* 아이콘과 텍스트 간격 */
-}
-
+/* 로딩 인디케이터 스타일 */
 .loading-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px 0;
 }
 .loading-indicator img {
   width: 30px;
@@ -523,27 +529,26 @@
 
 /* --- 스켈레톤 UI 스타일 시작 --- */
 .skeleton-placeholder {
-  background-color: #e0e0e0; /* 스켈레톤 기본 배경색 */
-  border-radius: 4px; /* 스켈레톤 모서리 둥글게 */
+  background-color: #e0e0e0; 
+  border-radius: 4px; 
   position: relative;
-  overflow: hidden; /* 애니메이션 효과를 위해 */
+  overflow: hidden; 
 }
 
-/* 반짝이는 애니메이션 효과 */
 .skeleton-placeholder::before {
   content: "";
   position: absolute;
   top: 0;
-  left: -150%; /* 왼쪽 바깥에서 시작 */
+  left: -150%; 
   height: 100%;
-  width: 150%; /* 플레이스홀더보다 넓게 */
+  width: 150%; 
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.5) 50%, /* 중간에 밝은 부분 */
+    rgba(255, 255, 255, 0.5) 50%, 
     transparent 100%
   );
-  animation: skeleton-shine 1.5s infinite; /* 애니메이션 적용 */
+  animation: skeleton-shine 1.5s infinite; 
 }
 
 @keyframes skeleton-shine {
@@ -551,32 +556,30 @@
     left: -150%;
   }
   100% {
-    left: 150%; /* 오른쪽 바깥으로 이동 */
+    left: 150%; 
   }
 }
 
-/* 바텀시트 스켈레톤 콘텐츠 영역 */
 .skeleton-bottom-sheet-content {
   padding: 16px;
   height: 100%;
   box-sizing: border-box;
+  padding-bottom: 76px; 
 }
 
 .skeleton-bottom-sheet-content h1 .skeleton-placeholder {
-  margin-bottom: 20px; /* 실제 h1 태그의 마진과 유사하게 */
+  margin-bottom: 20px; 
 }
 
-/* 스켈레톤 리스트 아이템 */
 .place-item.skeleton-item {
-  background: transparent; /* 스켈레톤 아이템 자체 배경은 투명하게 */
-  box-shadow: none; /* 스켈레톤 아이템 그림자 제거 */
-  padding: 12px; /* 실제 아이템과 동일한 패딩 유지 */
-  border-radius: 12px; /* 실제 아이템과 동일한 radius 유지 */
-  /* 스켈레톤 아이템에는 border를 주지 않거나, 필요시 다른 스타일 적용 */
+  background: transparent; 
+  box-shadow: none; 
+  padding: 12px; 
+  border-radius: 12px; 
 }
 
 .place-thumb-skeleton {
-  border-radius: 12px; /* 실제 썸네일과 동일하게 */
+  border-radius: 12px; 
   flex-shrink: 0;
 }
 
@@ -585,24 +588,39 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px; /* 실제 메타 정보와 유사한 간격 */
-  justify-content: center; /* 내부 플레이스홀더 세로 정렬 (선택 사항) */
-}
-
-.place-thumb-skeleton {
-  border-radius: 12px; /* 실제 썸네일과 동일하게 */
-  flex-shrink: 0;
-}
-
-.place-meta.skeleton-meta {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px; /* 실제 메타 정보와 유사한 간격 */
-  justify-content: center; /* 내부 플레이스홀더 세로 정렬 (선택 사항) */
+  gap: 2px; 
+  justify-content: center; 
 }
 
 .place-fav-btn-skeleton {
-  border-radius: 50%; /* 실제 즐겨찾기 버튼과 동일하게 */
+  border-radius: 50%; 
 }
+/* --- 스켈레톤 UI 스타일 끝 --- */
+
+/* 더보기 버튼 스타일 */
+.load-more-button {
+  display: block;
+  width: calc(100% - 32px); 
+  margin: 20px auto 0; 
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #1673ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-align: center;
+}
+
+.load-more-button:hover {
+  background-color: #135fcd;
+}
+
+.load-more-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+
