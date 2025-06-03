@@ -260,15 +260,19 @@ export default function Lobby() {
             const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png'; // 즐겨찾기 여부에 따라 마커 이미지 변경
 
             return (
-              <MapMarker
-                key={place.id}
-                position={{ lat: place.lat, lng: place.lon }}
-                image={{ 
-                  src: markerImageSrc, 
-                  size: { width: 28, height: 32 } 
-                }}
-                onClick={() => handlePlaceClick(place)}
-              />
+              <CustomOverlayMap key={place.id} position={{ lat: place.lat, lng: place.lon }}>
+                <div 
+                  className="marker-wrap"
+                  onClick={() => handlePlaceClick(place)}
+                >
+                  <img 
+                    src={markerImageSrc} 
+                    alt="Place Marker" 
+                    className="marker-icon" 
+                  />
+                </div>
+              </CustomOverlayMap>
+
             );
           })}
         </Map>
