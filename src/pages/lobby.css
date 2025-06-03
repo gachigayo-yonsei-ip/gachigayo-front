@@ -421,9 +421,17 @@
   }
 }
 
+.current-location-marker {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  z-index: 9999; /* 클러스터 위로 올라가게 */
+}
+
 .pulse-circle {
   width: 40px;
   height: 40px;
+  z-index: 9999; /* 클러스터 위로 올라가게 */
   border: 3px solid #1673ff;
   border-radius: 50%;
   background-color: rgba(22, 115, 255, 0.3);
@@ -437,6 +445,7 @@
 .center-dot {
   width: 12px;
   height: 12px;
+  z-index: 9999; /* 클러스터 위로 올라가게 */
   background-color: #1673ff;
   border-radius: 50%;
   position: absolute;
