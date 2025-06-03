@@ -49,7 +49,11 @@ export default function Lobby() {
   const bottomSheetContentRef = useRef(null); // 스크롤 컨테이너 ref
   const observer = useRef(); // Intersection Observer ref
 
+
   const mapRef = useRef();
+  const clustererRef = useRef(null); 
+  const [mapLevel, setMapLevel] = useState(3); 
+
   const handleCenterToCurrentLocation = () => {
     if (mapRef.current) {
       mapRef.current.panTo(new kakao.maps.LatLng(coords.lat, coords.lng));
@@ -283,12 +287,10 @@ export default function Lobby() {
       clusterer.clear();
     };
   }, [allPlaces]);
-  const [mapLevel, setMapLevel] = useState(3); // 초기 level
 
   // 지도 줌 레벨 바뀔 때 감지
   useEffect(() => {
     if (!mapRef.current) return;
-
     const map = mapRef.current;
 
     kakao.maps.event.addListener(map, 'zoom_changed', () => {
@@ -296,6 +298,61 @@ export default function Lobby() {
       setMapLevel(level);
     });
   }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !allPlaces.length) return;
+    const map = mapRef.current;
+  
+    // 기존 클러스터러 제거
+    if (clustererRef.current) {
+      clustererRef.current.clear();
+      clustererRef.current.setMap(null);
+      clustererRef.current = null;
+    }
+  
+    if (mapLevel > 5) { // ✅ 줌 아웃일 때만 클러스터 생성
+      const clusterer = new kakao.maps.MarkerClusterer({
+        map: map,
+        averageCenter: true,
+        minLevel: 5,
+        disableClickZoom: false,
+        calculator: [10, 30, 100],
+        styles: [
+          {
+            width: '60px',
+            height: '60px',
+            background: 'url("https://marker.nanoka.fr/map_cluster-1673FF-60.svg") no-repeat center center',
+            backgroundSize: 'cover',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            lineHeight: '60px'
+          }
+        ]
+      });
+  
+      const markers = allPlaces.map((place) => {
+        const markerImageSrc = favorites.includes(place.id) 
+          ? '/red-marker.png' 
+          : '/other-marker.png';
+  
+        const markerImage = new kakao.maps.MarkerImage(
+          markerImageSrc,
+          new kakao.maps.Size(28, 32)
+        );
+  
+        return new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(place.lat, place.lon),
+          image: markerImage
+        });
+      });
+  
+      clusterer.addMarkers(markers);
+      clustererRef.current = clusterer; // ✅ 만든 클러스터러 저장
+    }
+  }, [allPlaces, mapLevel, favorites]);
+  
 
 
   return (
@@ -320,9 +377,9 @@ export default function Lobby() {
               <div className="center-dot" />
             </div>
           </CustomOverlayMap>
-          {mapLevel <= 5 && placesToShow.map(place => {
+          {mapLevel <= 5 && placesToShow.map(place => {  // ✅ 레벨 조건 추가
             const isFavorite = favorites.includes(place.id);
-            const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png'; // 즐겨찾기 여부에 따라 마커 이미지 변경
+            const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png';
 
             return (
               <CustomOverlayMap key={place.id} position={{ lat: place.lat, lng: place.lon }}>
@@ -331,15 +388,14 @@ export default function Lobby() {
                   onClick={() => handlePlaceClick(place)}
                 >
                   <img 
-                    src={markerImageSrc} 
-                    alt="Place Marker" 
-                    className="marker-icon" 
+                    src={markerImageSrc}
+                    alt="Place Marker"
+                    className="marker-icon"
                   />
                 </div>
               </CustomOverlayMap>
             );
           })}
-
         </Map>
       </div>
 
