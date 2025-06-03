@@ -73,6 +73,12 @@ export default function Lobby() {
         },
         (err) => {
           console.error('위치 정보를 가져올 수 없습니다.', err);
+
+          // 위치 못 가져오면 기본 좌표 (서울 시청)
+          setCoords({
+            lat: 37.5665,  // 서울 시청 위도
+            lng: 126.9780, // 서울 시청 경도
+          });
         }
       );
     }
