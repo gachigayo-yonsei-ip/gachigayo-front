@@ -366,25 +366,33 @@
 }
 
 
-.empty-icon {
-  width: 32px;
-  height: 32px;
-  fill: white;         /* ✅ 아이콘 내부 색상 */
-  stroke: none;        /* ✅ 외곽선 제거 */
+
+
+/* 새로운 이모티콘 스타일 */
+.empty-icon-emoji {
+  font-size: 40px; /* 이모티콘 크기 조정 */
+  line-height: 1; /* 이모티콘이 중앙에 오도록 line-height 조정 */
+  color: #555; /* 이모티콘 색상 (기본 이모티콘 색상을 사용하거나 지정) */
 }
 
+.empty-title {
+  text-align: center;
+  font-size: 1.2rem; /* 제목 크기 조정 */
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.empty-subtext {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+}
 
 .empty-message {
   text-align: center;
   color: #666;
   padding: 40px 20px;
   font-size: 0.95rem;
-}
-
-/* ✅ 텍스트 가운데 정렬 추가 */
-.empty-title,
-.empty-subtext {
-  text-align: center;
 }
 
 .toast {
@@ -445,7 +453,7 @@
 .center-dot {
   width: 12px;
   height: 12px;
-  z-index: 9999; /* 클러스터 위로 올라가게 */
+  
   background-color: #1673ff;
   border-radius: 50%;
   position: absolute;
@@ -466,3 +474,135 @@
 }
 
 
+/* lobby.css 또는 해당 스타일 파일에 추가 */
+
+.place-detail-content .detail-view-thumb {
+  width: 100%;
+  max-height: 300px; /* 상세 뷰 이미지 최대 높이 */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.place-detail-content .detail-fav-btn {
+  display: flex; /* 아이콘과 텍스트 정렬 */
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  margin-top: 15px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.place-detail-content .detail-fav-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.place-detail-content .detail-fav-btn .favorite-icon {
+  width: 18px; /* 아이콘 크기 조정 */
+  height: 18px;
+  margin-right: 8px; /* 아이콘과 텍스트 간격 */
+}
+
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.loading-indicator img {
+  width: 30px;
+  height: 30px;
+}
+
+/* --- 스켈레톤 UI 스타일 시작 --- */
+.skeleton-placeholder {
+  background-color: #e0e0e0; /* 스켈레톤 기본 배경색 */
+  border-radius: 4px; /* 스켈레톤 모서리 둥글게 */
+  position: relative;
+  overflow: hidden; /* 애니메이션 효과를 위해 */
+}
+
+/* 반짝이는 애니메이션 효과 */
+.skeleton-placeholder::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%; /* 왼쪽 바깥에서 시작 */
+  height: 100%;
+  width: 150%; /* 플레이스홀더보다 넓게 */
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 50%, /* 중간에 밝은 부분 */
+    transparent 100%
+  );
+  animation: skeleton-shine 1.5s infinite; /* 애니메이션 적용 */
+}
+
+@keyframes skeleton-shine {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%; /* 오른쪽 바깥으로 이동 */
+  }
+}
+
+/* 바텀시트 스켈레톤 콘텐츠 영역 */
+.skeleton-bottom-sheet-content {
+  padding: 16px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.skeleton-bottom-sheet-content h1 .skeleton-placeholder {
+  margin-bottom: 20px; /* 실제 h1 태그의 마진과 유사하게 */
+}
+
+/* 스켈레톤 리스트 아이템 */
+.place-item.skeleton-item {
+  background: transparent; /* 스켈레톤 아이템 자체 배경은 투명하게 */
+  box-shadow: none; /* 스켈레톤 아이템 그림자 제거 */
+  padding: 12px; /* 실제 아이템과 동일한 패딩 유지 */
+  border-radius: 12px; /* 실제 아이템과 동일한 radius 유지 */
+  /* 스켈레톤 아이템에는 border를 주지 않거나, 필요시 다른 스타일 적용 */
+}
+
+.place-thumb-skeleton {
+  border-radius: 12px; /* 실제 썸네일과 동일하게 */
+  flex-shrink: 0;
+}
+
+.place-meta.skeleton-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* 실제 메타 정보와 유사한 간격 */
+  justify-content: center; /* 내부 플레이스홀더 세로 정렬 (선택 사항) */
+}
+
+.place-thumb-skeleton {
+  border-radius: 12px; /* 실제 썸네일과 동일하게 */
+  flex-shrink: 0;
+}
+
+.place-meta.skeleton-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* 실제 메타 정보와 유사한 간격 */
+  justify-content: center; /* 내부 플레이스홀더 세로 정렬 (선택 사항) */
+}
+
+.place-fav-btn-skeleton {
+  border-radius: 50%; /* 실제 즐겨찾기 버튼과 동일하게 */
+}
