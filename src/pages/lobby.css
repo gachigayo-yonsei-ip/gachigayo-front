@@ -399,3 +399,38 @@
     opacity: 0;
   }
 }
+
+.pulse-circle {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #1673ff;
+  border-radius: 50%;
+  background-color: rgba(22, 115, 255, 0.3);
+  animation: pulse 1.5s infinite ease-out;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #1673ff;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}

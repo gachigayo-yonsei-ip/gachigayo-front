@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'; // useMemo 추가
 import { useNavigate } from 'react-router-dom';
-import { Map, MapMarker } from 'react-kakao-maps-sdk';
+import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk';
 import './lobby.css';
 import CustomBottomSheet from '../components/BottomSheet';
 
@@ -249,15 +249,12 @@ export default function Lobby() {
           ref={mapRef}
         >
           {/* 현재 위치 마커 */}
-          <MapMarker
-            position={coords}
-            image={{
-              src: "/myLocationMarker.svg",           
-              size: { width: 40, height: 40 },    
-              options: { offset: { x: 16, y: 32 } } 
-            }}
-            title="현재 위치"
-          />
+          <CustomOverlayMap position={coords}>
+            <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+              <div className="pulse-circle" />
+              <div className="center-dot" />
+            </div>
+          </CustomOverlayMap>
           {placesToShow.map(place => {
             const isFavorite = favorites.includes(place.id);
             const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png'; // 즐겨찾기 여부에 따라 마커 이미지 변경
