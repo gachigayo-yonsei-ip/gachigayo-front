@@ -294,7 +294,7 @@
   overflow-y: auto; 
   height: 100%; 
   box-sizing: border-box; 
-  padding-bottom: 76px; /* 하단 네비게이션 바(60px) + 추가 여유 공간(16px) */
+  padding-bottom: 40px; /* 하단 네비게이션 바(60px) + 추가 여유 공간(16px) */
 }
 
 .bottom-sheet-scroll-content h1 {

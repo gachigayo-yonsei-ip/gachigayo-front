@@ -1,234 +1,248 @@
-.edit-place-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    max-width: 1024px; /* lobby.css와 일관성 유지 */
-    margin: 0 auto;
-    background-color: #f0f2f5; /* 전체 배경색 (이미지 참고) */
-  }
-  
-  .edit-place-header {
-    display: flex;
-    align-items: center;
-    padding: 0 16px; /* 좌우 패딩만 */
-    background-color: #ffffff;
-    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */ /* 그림자 제거 또는 약하게 */
-    height: 56px; 
-    box-sizing: border-box;
-    width: 100%;
-    position: sticky; /* 상단 고정 */
-    top: 0;
-    z-index: 100;
-  }
-  
-  .edit-place-header .back-arrow-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px; 
-    margin-right: 8px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333; 
-  }
-  
-  .edit-place-header .back-arrow-button svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .edit-place-header h1 {
-    font-size: 1.125rem; /* 18px, 이미지의 "Edit" 폰트 크기 참고 */
-    font-weight: 600;
-    color: #1c1e21; /* 어두운 텍스트 색상 */
-    margin: 0;
-    position: absolute; /* 중앙 정렬 */
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  
-  .edit-place-content {
-    flex-grow: 1;
-    padding: 20px 16px;
-    overflow-y: auto;
-  }
-  
-  .form-group {
-    margin-bottom: 24px;
-  }
-  
-  .form-group label {
-    display: block;
-    font-size: 0.875rem; /* 14px */
-    font-weight: 600;
-    color: #606770; /* 약간 연한 텍스트 색상 */
-    margin-bottom: 8px;
-  }
-  
-  .form-group input[type="text"],
-  .form-group textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #ccd0d5; /* 연한 회색 테두리 */
-    border-radius: 6px;
-    font-size: 1rem; /* 16px */
-    color: #1c1e21;
-    box-sizing: border-box;
-    background-color: #f5f6f7; /* 입력 필드 배경색 */
-  }
-  
-  .form-group input[type="text"]:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #1877f2; /* 포커스 시 파란색 테두리 (선택 사항) */
-    background-color: #fff;
-    /* box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2); */ /* 선택 사항 */
-  }
-  
-  .form-group textarea {
-    resize: vertical; /* 세로 크기만 조절 가능 */
-    min-height: 100px;
-  }
-  
-  .location-input-group {
-    display: flex;
-    align-items: center;
-    background-color: #f5f6f7;
-    border: 1px solid #ccd0d5;
-    border-radius: 6px;
-    padding-left: 12px; /* 아이콘과 입력 필드 사이 간격 */
-  }
-  .location-input-group:focus-within { /* 내부 input 포커스 시 그룹 전체 스타일 변경 */
-    border-color: #1877f2;
-    background-color: #fff;
-  }
-  
-  
-  .location-input-group .location-icon {
-    font-size: 1.2rem;
-    color: #606770;
-    margin-right: 8px;
-  }
-  
-  .location-input-group input[type="text"] {
-    border: none; /* 그룹에서 테두리 관리 */
-    padding: 12px 0; /* 내부 패딩 조정 */
-    flex-grow: 1;
-    background-color: transparent; /* 그룹 배경색 사용 */
-  }
-  .location-input-group input[type="text"]:focus {
-    outline: none;
-  }
-  
-  
-  .photos-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* 반응형 그리드 */
-    gap: 10px;
-    margin-top: 8px;
-  }
-  
-  .photo-preview-item {
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%; /* 정사각형 비율 유지 */
-    border-radius: 6px;
-    overflow: hidden;
-    background-color: #e0e0e0;
-  }
-  
-  .photo-preview-item img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .remove-photo-btn {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    cursor: pointer;
-    padding: 0;
-  }
-  
-  .add-photo-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding-bottom: 100%; /* 정사각형 비율 유지 (내부 컨텐츠는 position absolute로 중앙정렬) */
-    border: 2px dashed #ccd0d5;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: #f5f6f7;
-    color: #606770;
-    font-size: 24px;
-    position: relative;
-  }
-  .add-photo-label:hover {
-    border-color: #1877f2;
-    color: #1877f2;
-  }
-  /* + 기호 중앙 정렬을 위한 추가 스타일 */
-  .add-photo-label::before {
-    content: '+';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  
-  .edit-place-footer {
-    padding: 16px;
-    background-color: #ffffff;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* 상단 그림자 */
-    position: sticky; /* 하단 고정 */
-    bottom: 0;
-    z-index: 100;
-  }
-  
-  .save-button {
-    width: 100%;
-    padding: 12px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    background-color: #1877f2; /* 페이스북 파란색 계열 */
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .save-button:hover {
-    background-color: #166fe5; /* 약간 어두운 파란색 */
-  }
-  
-  .save-button:disabled {
-    background-color: #bcc0c4; /* 비활성화 시 회색 */
-    cursor: not-allowed;
-  }
-  
-  .loading-state { /* 로딩 중일 때 스타일 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    font-size: 1.2rem;
-    color: #606770;
-  }
-  
+/* EditPlace.css: AddPlace 디자인을 그대로 가져옴 */
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* --------------------------------------------------
+   컨테이너 및 전역 폰트 설정
+   -------------------------------------------------- */
+.container {
+  width: 100%;
+  padding: 0 20px;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+/* ---------- Header ---------- */
+.header {
+  margin-top: 16px;
+  position: relative;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: black;
+  text-align: center;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.header-title {
+  position: absolute;
+  top: 61%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ---------- Title Section ---------- */
+.title-section {
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.sub-title {
+  color: #888;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ---------- Form ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Input Group */
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.input-location {
+  width: 100%;
+  /* 기존 속성 유지 */
+  border: none;  
+  padding: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+
+.input-error {
+  border-color: red;
+}
+
+.textarea {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  min-height: 100px;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* 태그 관련 스타일 */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tag-item {
+  background-color: #e0e0e0;
+  border-radius: 16px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.tag-close-btn {
+  background: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: #555;
+}
+
+/* Location 아이콘 입력 (왼쪽에 📍 붙이는 경우) */
+.location-input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.location-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+/* Photos Preview Grid */
+.photos-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.photo-preview-item {
+  position: relative;
+}
+
+.photo-preview-item img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.remove-photo-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #e74c3c;
+}
+
+/* Submit/Save Button */
+.submit-button, .save-button {
+  padding: 14px;
+  border-radius: 24px;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 20px;
+  transition: background-color 0.2s;
+}
+
+.submit-button.disabled,
+.save-button.disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.submit-button.active,
+.save-button.active {
+  background-color: #1673ff;
+  cursor: pointer;
+}
+
+/* Error Text */
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Toast 알림 */
+.toast {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  transition: top 0.5s ease;
+}
+
+.toast.show {
+  top: 20px;
+}

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Map, CustomOverlayMap } from 'react-kakao-maps-sdk';
 import './lobby.css';
 import CustomBottomSheet from '../components/BottomSheet';
 
-const ITEMS_PER_PAGE = 10; // 한 번에 보여줄 아이템 개수 변경
+const ITEMS_PER_PAGE = 15; // 한 번에 보여줄 아이템 개수
 
-// Haversine 공식 (변경 없음)
+// Haversine 공식
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // 지구 반지름 (km)
   const dLat = deg2rad(lat2 - lat1);
@@ -23,7 +23,7 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
-// --- 스켈레톤 UI 컴포넌트 시작 ---
+// 스켈레톤 UI 컴포넌트
 const SkeletonPlaceholder = ({ height, width, className = '', style = {} }) => (
   <div
     className={`skeleton-placeholder ${className}`}
@@ -43,20 +43,16 @@ const SkeletonListItem = () => (
   </li>
 );
 
-// 바텀시트 내용만 스켈레톤으로 표시하는 컴포넌트
-const BottomSheetSkeletonContent = () => {
-  return (
-    <div className="bottom-sheet-scroll-content skeleton-bottom-sheet-content">
-      <h1><SkeletonPlaceholder height="30px" width="40%" style={{ marginBottom: '20px' }} /></h1>
-      <ul className="place-list">
-        {/* 스켈레톤 아이템 개수를 ITEMS_PER_PAGE에 맞추거나 고정값 사용 가능 */}
-        {[...Array(5)].map((_, i) => <SkeletonListItem key={`skeleton-${i}`} />)}
-      </ul>
-    </div>
-  );
-};
-// --- 스켈레톤 UI 컴포넌트 끝 ---
-
+const BottomSheetSkeletonContent = () => (
+  <div className="bottom-sheet-scroll-content skeleton-bottom-sheet-content">
+    <h1>
+      <SkeletonPlaceholder height="30px" width="40%" style={{ marginBottom: '20px' }} />
+    </h1>
+    <ul className="place-list">
+      {[...Array(5)].map((_, i) => <SkeletonListItem key={`skeleton-${i}`} />)}
+    </ul>
+  </div>
+);
 
 export function CurrentLocationOverlay({ map, coords }) {
   useEffect(() => {
@@ -69,21 +65,18 @@ export function CurrentLocationOverlay({ map, coords }) {
       <div class="center-dot"></div>
     `;
 
-    // Kakao Maps API가 로드되었는지 확인
     if (window.kakao && window.kakao.maps) {
-        const overlay = new window.kakao.maps.CustomOverlay({
-            position: new window.kakao.maps.LatLng(coords.lat, coords.lng),
-            content: content,
-            yAnchor: 0.5,
-            xAnchor: 0.5,
-            zIndex: 9999,
-        });
-        overlay.setMap(map);
-        return () => {
-            overlay.setMap(null);
-        };
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(coords.lat, coords.lng),
+        content: content,
+        yAnchor: 0.5,
+        xAnchor: 0.5,
+        zIndex: 9999,
+      });
+      overlay.setMap(map);
+      return () => overlay.setMap(null);
     } else {
-        console.warn("Kakao Maps API is not loaded. CurrentLocationOverlay may not work.");
+      console.warn("Kakao Maps API is not loaded. CurrentLocationOverlay may not work.");
     }
   }, [map, coords]);
 
@@ -91,120 +84,83 @@ export function CurrentLocationOverlay({ map, coords }) {
 }
 
 export default function Lobby() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 }); // 기본값: 서울 시청
-  const [allPlaces, setAllPlaces] = useState([]);
-  const [sortedPlaces, setSortedPlaces] = useState([]);
-  const [displayedPlaces, setDisplayedPlaces] = useState([]);
+  const [coords, setCoords] = useState({ lat: 37.5665, lng: 126.9780 }); // 기본: 서울 시청
+  const [allPlaces, setAllPlaces] = useState([]); // 서버에서 받아온 모든 장소
+  const [sortedPlaces, setSortedPlaces] = useState([]); // 거리순 정렬된 장소
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false); // '더보기' 로딩 상태
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // 초기 장소 목록 로딩 상태
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
-  const navigate = useNavigate();
-
   const [viewFavorites, setViewFavorites] = useState(false);
   const [favPage, setFavPage] = useState(1);
-  const [displayedFavorites, setDisplayedFavorites] = useState([]);
 
-  const bottomSheetContentRef = useRef(null); 
+  const bottomSheetContentRef = useRef(null);
   const mapRef = useRef();
   const clustererRef = useRef(null);
   const [showCustomMarkers, setShowCustomMarkers] = useState(true);
 
-  const handleCenterToCurrentLocation = () => {
-    if (mapRef.current && window.kakao && window.kakao.maps) {
-      mapRef.current.panTo(new window.kakao.maps.LatLng(coords.lat, coords.lng));
-    }
-  };
+  // ① 사용자 현재 위치 가져오기
+  useEffect(() => {
+    setCoords({ lat: 37.555726, lng: 126.894570 });
+  }, []);
+  
 
-  // ① 사용자 현재 위치 가져오기 (변경 없음)
+  /*
+  // ① 사용자 현재 위치 가져오기
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setCoords({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          });
-        },
-        (err) => {
-          console.error('Could not get location information.', err); 
-          setCoords({ lat: 37.5665, lng: 126.9780 }); 
-        }
+        (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setCoords({ lat: 37.555726, lng: 126.894570 })
       );
     } else {
-        console.warn("Geolocation API is not supported."); 
-        setCoords({ lat: 37.5665, lng: 126.9780 }); 
+      console.warn("Geolocation API is not supported.");
+      setCoords({ lat: 37.555726, lng: 126.894570 });
     }
   }, []);
+  */
 
-  // ② 서버에서 장소 목록 받아오기 + Google Photos 정보 요청 (백엔드 프록시 사용)
+  // ② 서버에서 장소 목록 받아오기 (마운트 + 필요 시 리프레시)
   useEffect(() => {
-    const fetchInitialPlacesAndPhotos = async () => {
-      setIsInitialLoading(true); 
+    const fetchInitialPlaces = async () => {
+      setIsInitialLoading(true);
       try {
-        const placesResponse = await fetch('http://localhost:3000/places'); 
+        const placesResponse = await fetch('http://localhost:3000/places');
         if (!placesResponse.ok) {
-          throw new Error(`Places list HTTP error! Status: ${placesResponse.status}`); 
+          throw new Error(`Places list HTTP error! Status: ${placesResponse.status}`);
         }
         let initialPlacesData = await placesResponse.json();
-        
         initialPlacesData = initialPlacesData.filter(
           (item) => typeof item.lat === 'number' && typeof item.lon === 'number'
         );
-
-        const placesWithPhotoUrlsPromises = initialPlacesData.map(async (place) => {
-          try {
-            const placeAddressForQuery = place.address || '';
-            const photoInfoProxyUrl = `http://localhost:3000/api/google-place-photo-info?placeName=${encodeURIComponent(place.name)}&placeAddress=${encodeURIComponent(placeAddressForQuery)}`;
-            
-            const photoInfoResponse = await fetch(photoInfoProxyUrl);
-            
-            if (photoInfoResponse.ok) {
-              const photoInfoData = await photoInfoResponse.json();
-              if (photoInfoData.status === "OK" && 
-                  typeof photoInfoData.photoUrl === 'string' && 
-                  photoInfoData.photoUrl.startsWith('https://')) {
-                return { ...place, photoUrl: photoInfoData.photoUrl };
-              } else {
-                console.log(`Photo not successfully loaded for ${place.name} (Status: ${photoInfoData.status}, URL: ${photoInfoData.photoUrl}), excluding from list.`);
-                return null; 
-              }
-            } else {
-              console.error(`Proxy fetch for photo failed for ${place.name} (status: ${photoInfoResponse.status}), excluding from list.`);
-              return null;
-            }
-          } catch (e) {
-            console.error(`Network error fetching photo for ${place.name}, excluding from list:`, e);
-            return null;
-          }
-        });
-
-        const resolvedPlacesWithOrWithoutPhoto = await Promise.all(placesWithPhotoUrlsPromises);
-        const finalPlaces = resolvedPlacesWithOrWithoutPhoto.filter(place => place !== null);
-        
-        console.log(`Fetched ${initialPlacesData.length} initial places, ${finalPlaces.length} places have photos and will be displayed.`);
-        setAllPlaces(finalPlaces);
-
+        setAllPlaces(initialPlacesData.map(place => ({ ...place, photoUrl: null })));
       } catch (err) {
-        console.error('Error loading initial places and photo information.', err); 
-        setAllPlaces([]); 
-      } finally {
-        setIsInitialLoading(false); 
+        console.error('Error loading initial places data.', err);
+        setAllPlaces([]);
+        setIsInitialLoading(false);
       }
     };
 
-    fetchInitialPlacesAndPhotos();
-  }, []); 
+    fetchInitialPlaces();
 
-  // ③ allPlaces 또는 coords가 변경되면 거리순으로 정렬
+    // EditPlace에서 needsRefresh 플래그가 넘어왔을 때 한 번만 실행 후 초기화
+    if (location.state?.needsRefresh) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.needsRefresh, navigate]);
+
+  // ③ allPlaces 혹은 coords 변경 시 거리순으로 정렬
   useEffect(() => {
     if (allPlaces.length > 0 && coords) {
       const sorted = [...allPlaces]
@@ -214,104 +170,194 @@ export default function Lobby() {
         }))
         .sort((a, b) => a.distance - b.distance);
       setSortedPlaces(sorted);
-      setCurrentPage(1); 
-      setFavPage(1);     
-    } else if (allPlaces.length === 0 && !isInitialLoading) { 
-        setSortedPlaces([]);
+      setCurrentPage(1);
+      setFavPage(1);
+    } else if (allPlaces.length === 0 && !isInitialLoading) {
+      setSortedPlaces([]);
     }
-  }, [allPlaces, coords, isInitialLoading]); 
+  }, [allPlaces, coords, isInitialLoading]);
 
-  // ④ sortedPlaces, currentPage, favPage, viewFavorites가 변경되면 displayedPlaces/displayedFavorites 업데이트
+  // ④ photoUrl 요청 및 isInitialLoading/isLoadingMore 상태 관리
   useEffect(() => {
-    if (viewFavorites) {
-      const currentFavoritePlaces = sortedPlaces.filter(p => favorites.includes(p.id));
-      const newDisplayedFavorites = currentFavoritePlaces.slice(0, favPage * ITEMS_PER_PAGE);
-      setDisplayedFavorites(newDisplayedFavorites);
-    } else {
-      const newDisplayedPlaces = sortedPlaces.slice(0, currentPage * ITEMS_PER_PAGE);
-      setDisplayedPlaces(newDisplayedPlaces);
-    }
-    setIsLoadingMore(false); 
-  }, [sortedPlaces, currentPage, favPage, viewFavorites, favorites]); 
+    const fetchPhotosForConsideredPlaces = async () => {
+      const baseList = viewFavorites
+        ? sortedPlaces.filter(p => favorites.includes(p.id))
+        : sortedPlaces;
 
-  // favorites 변경 시 localStorage에 저장 (변경 없음)
+      const startIndex = (viewFavorites ? favPage : currentPage) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE * 2;
+      const placesToConsider = baseList.slice(0, endIndex);
+
+      const placesWithoutPhotos = placesToConsider.filter(place => place.photoUrl === null);
+      if (placesWithoutPhotos.length === 0) {
+        if (isInitialLoading) setIsInitialLoading(false);
+        if (isLoadingMore) setIsLoadingMore(false);
+        return;
+      }
+
+      const photoFetchPromises = placesWithoutPhotos.map(async (place) => {
+        try {
+          const placeAddressForQuery = place.address || '';
+          const proxyUrl = `http://localhost:3000/api/google-place-photo-info?placeName=${encodeURIComponent(place.name)}&placeAddress=${encodeURIComponent(placeAddressForQuery)}`;
+          const photoInfoResponse = await fetch(proxyUrl);
+
+          if (photoInfoResponse.ok) {
+            const photoInfoData = await photoInfoResponse.json();
+            if (
+              photoInfoData.status === "OK" &&
+              typeof photoInfoData.photoUrl === 'string' &&
+              photoInfoData.photoUrl.startsWith('https://')
+            ) {
+              return { ...place, photoUrl: photoInfoData.photoUrl, hasValidPhoto: true };
+            } else {
+              return { ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false };
+            }
+          } else {
+            return { ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false };
+          }
+        } catch {
+          return { ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false };
+        }
+      });
+
+      const resolvedPlaces = await Promise.all(photoFetchPromises);
+      setAllPlaces(prev =>
+        prev.map(p => {
+          const updated = resolvedPlaces.find(rp => rp.id === p.id);
+          return updated ? updated : p;
+        })
+      );
+
+      if (isInitialLoading) setIsInitialLoading(false);
+      if (isLoadingMore) setIsLoadingMore(false);
+    };
+
+    if ((isInitialLoading && sortedPlaces.length > 0) || isLoadingMore) {
+      fetchPhotosForConsideredPlaces();
+    }
+  }, [sortedPlaces, currentPage, favPage, viewFavorites, favorites, isInitialLoading, isLoadingMore]);
+
+  // ⑤ favorites → localStorage 동기화
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // 즐겨찾기 장소 목록 (useMemo 사용)
+  // photoUrl이 유효한 장소들만 필터링
+  const placesWithValidPhotos = useMemo(() => {
+    return sortedPlaces.filter(place => place.photoUrl && place.photoUrl !== '/default-thumbnail.jpg');
+  }, [sortedPlaces]);
+
+  // 즐겨찾기만 필터링
   const favoritePlaces = useMemo(() => {
-    return sortedPlaces.filter(p => favorites.includes(p.id));
-  }, [sortedPlaces, favorites]);
+    return placesWithValidPhotos.filter(p => favorites.includes(p.id));
+  }, [placesWithValidPhotos, favorites]);
 
-
-  // '더보기' 버튼 클릭 핸들러
+  // “Load More” 버튼 클릭
   const handleLoadMore = () => {
     if (isLoadingMore) return;
-    setIsLoadingMore(true); 
+    setIsLoadingMore(true);
+
+    const currentBaseList = viewFavorites ? favoritePlaces : placesWithValidPhotos;
+    const maxPage = Math.ceil(currentBaseList.length / ITEMS_PER_PAGE);
 
     if (viewFavorites) {
-      if (displayedFavorites.length < favoritePlaces.length) {
-        setFavPage(prevPage => prevPage + 1);
+      if (favPage < maxPage) {
+        setFavPage(prev => prev + 1);
       } else {
-        setIsLoadingMore(false); 
+        setIsLoadingMore(false);
       }
     } else {
-      if (displayedPlaces.length < sortedPlaces.length) {
-        setCurrentPage(prevPage => prevPage + 1);
+      if (currentPage < maxPage) {
+        setCurrentPage(prev => prev + 1);
       } else {
-        setIsLoadingMore(false); 
+        setIsLoadingMore(false);
       }
     }
   };
 
-  // 장소 클릭 핸들러 (변경 없음)
-  const handlePlaceClick = place => {
-    setSelectedPlace(place);
+  // 장소 클릭 → 상세 뷰 열기, 반드시 photoUrl이 준비된 상태로 설정
+  const handlePlaceClick = async (place) => {
+    if (!place.photoUrl || place.photoUrl === '/default-thumbnail.jpg') {
+      try {
+        const placeAddressForQuery = place.address || '';
+        const proxyUrl = `http://localhost:3000/api/google-place-photo-info?placeName=${encodeURIComponent(place.name)}&placeAddress=${encodeURIComponent(placeAddressForQuery)}`;
+        const photoInfoResponse = await fetch(proxyUrl);
+
+        if (photoInfoResponse.ok) {
+          const photoInfoData = await photoInfoResponse.json();
+          if (
+            photoInfoData.status === "OK" &&
+            typeof photoInfoData.photoUrl === 'string' &&
+            photoInfoData.photoUrl.startsWith('https://')
+          ) {
+            setAllPlaces(prev =>
+              prev.map(p =>
+                p.id === place.id
+                  ? { ...p, photoUrl: photoInfoData.photoUrl, hasValidPhoto: true }
+                  : p
+              )
+            );
+            setSelectedPlace({ ...place, photoUrl: photoInfoData.photoUrl, hasValidPhoto: true });
+          } else {
+            setSelectedPlace({ ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false });
+          }
+        } else {
+          setSelectedPlace({ ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false });
+        }
+      } catch {
+        setSelectedPlace({ ...place, photoUrl: '/default-thumbnail.jpg', hasValidPhoto: false });
+      }
+    } else {
+      setSelectedPlace(place);
+    }
+
     setIsDetailViewOpen(true);
     if (mapRef.current && window.kakao && window.kakao.maps) {
-        mapRef.current.panTo(new window.kakao.maps.LatLng(place.lat, place.lon));
+      mapRef.current.panTo(new window.kakao.maps.LatLng(place.lat, place.lon));
     }
   };
 
-  // 상세 뷰 닫기 핸들러 (변경 없음)
   const handleCloseDetailView = () => {
     setIsDetailViewOpen(false);
     setSelectedPlace(null);
   };
 
-  // 즐겨찾기 토글 핸들러 (토스트 메시지는 이미 영어)
-  const handleToggleFavorite = id => {
+  const handleToggleFavorite = (id) => {
     const isAlreadyFavorite = favorites.includes(id);
     setFavorites(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      isAlreadyFavorite ? prev.filter(x => x !== id) : [...prev, id]
     );
     setToastMessage(isAlreadyFavorite ? '💔 Removed from Favorites!' : '❤️ Added to Favorites!');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 1500);
   };
 
-  // Edit 버튼 클릭 핸들러
+  // Edit 버튼 클릭 → EditPlace로 이동
   const handleEditPlace = (placeId) => {
-    // /edit 경로로 이동하고, 수정할 장소의 ID를 state로 전달
-    navigate(`/edit`, { state: { placeId: placeId } });
-    console.log("Navigating to edit page for place ID:", placeId);
+    navigate(`/edit`, { state: { placeId, needsRefresh: true } });
   };
 
-  const placesToShow = viewFavorites ? displayedFavorites : displayedPlaces;
-  const totalPlacesInCurrentView = viewFavorites ? favoritePlaces.length : sortedPlaces.length;
+  // 화면에 표시할 장소 계산 (페이지네이션 및 사진 유효성 필터링)
+  const placesToShow = useMemo(() => {
+    const base = viewFavorites
+      ? favoritePlaces
+      : placesWithValidPhotos;
+    const endIndex = (viewFavorites ? favPage : currentPage) * ITEMS_PER_PAGE;
+    return base.slice(0, endIndex);
+  }, [viewFavorites, favPage, currentPage, placesWithValidPhotos, favorites]);
+
+  const totalPlacesInCurrentView = viewFavorites ? favoritePlaces.length : placesWithValidPhotos.length;
   const canLoadMore = placesToShow.length < totalPlacesInCurrentView;
 
-  // 지도 줌 변경 시 마커/클러스터러 관리 (kakao.maps 로드 확인 추가)
+  // 줌 레벨에 따라 마커/클러스터러 토글
   useEffect(() => {
     if (isInitialLoading || !mapRef.current || !window.kakao || !window.kakao.maps) return;
-    if (allPlaces.length === 0 && !isInitialLoading) { 
-        if(clustererRef.current) clustererRef.current.clear(); 
-        return;
+    if (allPlaces.length === 0 && !isInitialLoading) {
+      if (clustererRef.current) clustererRef.current.clear();
+      return;
     }
 
     const map = mapRef.current;
-
     const handleZoomChange = () => {
       const level = map.getLevel();
       setShowCustomMarkers(level <= 5);
@@ -321,113 +367,111 @@ export default function Lobby() {
       }
 
       if (level > 5) {
-        if (!clustererRef.current) { 
-            clustererRef.current = new window.kakao.maps.MarkerClusterer({
-                map: map,
-                averageCenter: true,
-                minLevel: 6, 
-                disableClickZoom: false,
-                calculator: [10, 30, 50], 
-                styles: [
-                {
-                    width: '50px', height: '50px',
-                    background: 'rgba(255, 82, 82, .8)', 
-                    borderRadius: '25px', color: '#fff',
-                    textAlign: 'center', fontWeight: 'bold', lineHeight: '50px',
-                    fontSize: '14px'
-                },
-                {
-                    width: '60px', height: '60px',
-                    background: 'rgba(255, 159, 64, .8)', 
-                    borderRadius: '30px', color: '#fff',
-                    textAlign: 'center', fontWeight: 'bold', lineHeight: '60px',
-                    fontSize: '16px'
-                },
-                {
-                    width: '70px', height: '70px',
-                    background: 'rgba(255, 204, 0, .8)', 
-                    borderRadius: '35px', color: '#000',
-                    textAlign: 'center', fontWeight: 'bold', lineHeight: '70px',
-                    fontSize: '18px'
-                }
-                ],
-            });
+        if (!clustererRef.current) {
+          clustererRef.current = new window.kakao.maps.MarkerClusterer({
+            map,
+            averageCenter: true,
+            minLevel: 6,
+            disableClickZoom: false,
+            calculator: [10, 30, 50],
+            styles: [
+              {
+                width: '50px', height: '50px',
+                background: 'rgba(255, 82, 82, .8)',
+                borderRadius: '25px', color: '#fff',
+                textAlign: 'center', fontWeight: 'bold', lineHeight: '50px',
+                fontSize: '14px'
+              },
+              {
+                width: '60px', height: '60px',
+                background: 'rgba(255, 159, 64, .8)',
+                borderRadius: '30px', color: '#fff',
+                textAlign: 'center', fontWeight: 'bold', lineHeight: '60px',
+                fontSize: '16px'
+              },
+              {
+                width: '70px', height: '70px',
+                background: 'rgba(255, 204, 0, .8)',
+                borderRadius: '35px', color: '#000',
+                textAlign: 'center', fontWeight: 'bold', lineHeight: '70px',
+                fontSize: '18px'
+              }
+            ],
+          });
         }
-        
-        const markers = allPlaces.map((place) => {
-          const markerImageSrc = favorites.includes(place.id) 
-            ? '/red-marker.png' 
-            : '/other-marker.png';
 
+        const markers = sortedPlaces.map((place) => {
+          const markerImageSrc = favorites.includes(place.id)
+            ? '/red-marker.png'
+            : '/other-marker.png';
           const imageSize = new window.kakao.maps.Size(28, 32);
           const markerImage = new window.kakao.maps.MarkerImage(markerImageSrc, imageSize);
-
           return new window.kakao.maps.Marker({
             position: new window.kakao.maps.LatLng(place.lat, place.lon),
             image: markerImage
           });
         });
-        clustererRef.current.clear(); 
         clustererRef.current.addMarkers(markers);
-      } else { 
+      } else {
         if (clustererRef.current) {
-            clustererRef.current.clear();
+          clustererRef.current.clear();
         }
       }
     };
 
-    handleZoomChange(); 
+    handleZoomChange();
     const zoomChangeListener = () => handleZoomChange();
     window.kakao.maps.event.addListener(map, 'zoom_changed', zoomChangeListener);
-    
+
     if (map.getLevel() > 5 && clustererRef.current) {
-        handleZoomChange(); 
+      handleZoomChange();
     }
 
     return () => {
-      if (window.kakao && window.kakao.maps && map) { 
+      if (window.kakao && window.kakao.maps && map) {
         window.kakao.maps.event.removeListener(map, 'zoom_changed', zoomChangeListener);
       }
       if (clustererRef.current) {
         clustererRef.current.clear();
       }
     };
-  }, [allPlaces, favorites, mapRef.current, isInitialLoading]); 
-
+  }, [allPlaces, favorites, mapRef.current, isInitialLoading, sortedPlaces, placesWithValidPhotos]);
 
   return (
     <div className="lobby-wrap">
       {showToast && (
-      <div className="toast">
-        {toastMessage}
-      </div>
+        <div className="toast">
+          {toastMessage}
+        </div>
       )}
+
       <div className="lobby-content">
-        <Map 
-          center={coords} 
-          level={3} 
-          style={{ width: '100%', height: '100%' }} 
+        <Map
+          center={coords}
+          level={3}
+          style={{ width: '100%', height: '100%' }}
           onCreate={(map) => (mapRef.current = map)}
-          isPanto={true} 
+          isPanto={true}
         >
           <CurrentLocationOverlay map={mapRef.current} coords={coords} />
 
-          {!isInitialLoading && showCustomMarkers && placesToShow.map(place => {
+          {!isInitialLoading && showCustomMarkers && sortedPlaces.map(place => {
             const isFavorite = favorites.includes(place.id);
             const markerImageSrc = isFavorite ? '/red-marker.png' : '/other-marker.png';
 
             return (
-              <CustomOverlayMap 
-                key={`${place.id}-${isFavorite}`} 
+              <CustomOverlayMap
+                key={`${place.id}-${isFavorite}`}
                 position={{ lat: place.lat, lng: place.lon }}
-                yAnchor={1} 
+                yAnchor={1}
+                zIndex={1000}
               >
-                <div 
+                <div
                   className="marker-wrap"
                   onClick={() => handlePlaceClick(place)}
                   title={place.name}
                 >
-                  <img 
+                  <img
                     src={markerImageSrc}
                     alt={place.name}
                     className="marker-icon"
@@ -442,63 +486,74 @@ export default function Lobby() {
       {isDetailViewOpen && selectedPlace && (
         <div className="place-detail-overlay" onClick={handleCloseDetailView}>
           <div className="place-detail-content" onClick={(e) => e.stopPropagation()}>
-            <img 
-                src={selectedPlace.photoUrl || '/default-thumbnail.jpg'} 
-                alt={selectedPlace.name} 
-                className="detail-view-thumb" 
+            <img
+              src={selectedPlace.photoUrl || '/default-thumbnail.jpg'}
+              alt={selectedPlace.name}
+              className="detail-view-thumb"
             />
             <h2>{selectedPlace.name}</h2>
             <p><strong>Address:</strong> {selectedPlace.address || 'N/A'}</p>
-            <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+            <hr className="detail-divider" />
 
             <p><strong>Distance:</strong> {selectedPlace.distance ? selectedPlace.distance.toFixed(2) + ' km' : 'N/A'}</p>
-            <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+            <hr className="detail-divider" />
 
             {selectedPlace.available_time && (
               <>
                 <p><strong>Hours:</strong> {selectedPlace.available_time}</p>
-                <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+                <hr className="detail-divider" />
               </>
             )}
 
             {selectedPlace.open_day && (
               <>
                 <p><strong>Open Days:</strong> {selectedPlace.open_day}</p>
-                <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+                <hr className="detail-divider" />
               </>
             )}
 
             {selectedPlace.closed_day && (
               <>
                 <p><strong>Closed Days:</strong> {selectedPlace.closed_day}</p>
-                <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+                <hr className="detail-divider" />
               </>
             )}
 
             {selectedPlace.subway_info && (
               <>
                 <p><strong>Subway Info:</strong> {selectedPlace.subway_info}</p>
-                <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+                <hr className="detail-divider" />
               </>
             )}
 
             {selectedPlace.tag && selectedPlace.tag.length > 0 && (
               <>
                 <p><strong>Tags:</strong> {selectedPlace.tag.join(', ')}</p>
-                <hr className="detail-divider" /> {/* class 대신 className 사용 */}
+                <hr className="detail-divider" />
               </>
+            )}
+
+            {selectedPlace.description && (
+              <>
+              <p><strong>Description:</strong> {selectedPlace.description}</p>
+              <hr className="detail-divider" />
+            </>
             )}
 
             {selectedPlace.detail_uri && (
               <p>
                 <strong>More Info:</strong>
                 <br />
-                <a href={selectedPlace.detail_uri} target="_blank" rel="noopener noreferrer">View Link</a>
+                <a href={selectedPlace.detail_uri} target="_blank" rel="noopener noreferrer">
+                  visitseoul.net
+                </a>
               </p>
-            )}            
-            {/* Edit 버튼 추가 */}
+            )}
+
+
+
             <button
-              className="detail-action-btn detail-edit-btn" // 공통 클래스 및 개별 클래스
+              className="detail-action-btn detail-edit-btn"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEditPlace(selectedPlace.id);
@@ -506,110 +561,125 @@ export default function Lobby() {
             >
               Edit Place
             </button>
-            <button 
-                className="detail-action-btn detail-fav-btn" // 공통 클래스 및 개별 클래스
-                onClick={(e) => {
-                    e.stopPropagation(); 
-                    handleToggleFavorite(selectedPlace.id);
-                }}
+            <button
+              className="detail-action-btn detail-fav-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleFavorite(selectedPlace.id);
+              }}
             >
-                <img 
-                    src={favorites.includes(selectedPlace.id) ? '/fullHeart.png' : '/emptyHeart.svg'} 
-                    alt="Favorite" 
-                    className="favorite-icon"
-                />
-                {favorites.includes(selectedPlace.id) ? ' Remove from Favorites' : ' Add to Favorites'} 
+              <img
+                src={favorites.includes(selectedPlace.id) ? '/fullHeart.png' : '/emptyHeart.svg'}
+                alt="Favorite"
+                className="favorite-icon"
+              />
+              {favorites.includes(selectedPlace.id) ? ' Remove from Favorites' : ' Add to Favorites'}
             </button>
-            <button onClick={handleCloseDetailView} className="detail-action-btn close-detail-btn">Close</button> 
+            <button onClick={handleCloseDetailView} className="detail-action-btn close-detail-btn">
+              Close
+            </button>
           </div>
         </div>
       )}
 
-      <CustomBottomSheet ref={bottomSheetContentRef } style={{ position: 'relative' }}>
+      <CustomBottomSheet ref={bottomSheetContentRef} style={{ position: 'relative' }}>
         <div className="sheet-buttons">
-          <button className="circle-button" onClick={handleCenterToCurrentLocation} title="Go to current location"> 
+          <button className="circle-button" onClick={() => {
+            if (mapRef.current && window.kakao && window.kakao.maps) {
+              mapRef.current.panTo(new window.kakao.maps.LatLng(coords.lat, coords.lng));
+            }
+          }} title="Go to current location">
             <img src="/icnCompas.png" alt="Compass" />
           </button>
-          <button className="circle-button" onClick={() => navigate('/add-place')} title="Add new place"> 
+          <button className="circle-button" onClick={() => navigate('/add-place')} title="Add new place">
             <img src="/plus.png" alt="Plus" />
           </button>
         </div>
-        
+
         {isInitialLoading ? (
           <BottomSheetSkeletonContent />
         ) : (
-          <div
-            ref={bottomSheetContentRef} 
-            className="bottom-sheet-scroll-content"
-          >
-            <h1>{viewFavorites ? 'Your Favorites' : 'Nearby Places'}</h1> 
+          <div ref={bottomSheetContentRef} className="bottom-sheet-scroll-content">
+            <h1>{viewFavorites ? 'Your Favorites' : 'Nearby Places'}</h1>
 
             {placesToShow.length > 0 ? (
               <ul className="place-list">
-              {placesToShow.map((place) => { 
-                const isFavorite = favorites.includes(place.id);
-                const isSelected = selectedPlace?.id === place.id;
-            
-                return ( 
-                  <li
-                    key={place.id}
-                    className={`place-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handlePlaceClick(place)}
-                  >
-                    <img
-                      src={place.photoUrl || "/default-thumbnail.jpg"}
-                      alt={place.name}
-                      className="place-thumb"
-                      onError={(e) => { e.target.onerror = null; e.target.src='/default-thumbnail.jpg';}} 
-                    />
-                    <div className="place-meta">
-                      <h3 className="place-name">{place.name}</h3>
-                      <p className="place-desc">
-                        {place.tag && place.tag.length > 0
-                          ? place.tag.join(', ')
-                          : (place.address || 'Address not available')} 
-                      </p>
-                      <p className="place-address">📍 {place.distance ? place.distance.toFixed(2) + ' km' : ''}</p>
-                    </div>
-                    <button
-                      className="place-fav-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleFavorite(place.id);
-                      }}
-                      title={isFavorite ? "Remove from favorites" : "Add to favorites"} 
+                {placesToShow.map((place) => {
+                  const isFavorite = favorites.includes(place.id);
+                  const isSelected = selectedPlace?.id === place.id;
+
+                  return (
+                    <li
+                      key={place.id}
+                      className={`place-item ${isSelected ? 'selected' : ''}`}
+                      onClick={() => handlePlaceClick(place)}
                     >
                       <img
-                        src={isFavorite ? '/fullHeart.png' : '/emptyHeart.svg'}
-                        alt="favorite"
-                        className="favorite-icon"
+                        src={place.photoUrl || "/default-thumbnail.jpg"}
+                        alt={place.name}
+                        className="place-thumb"
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/default-thumbnail.jpg'; }}
                       />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>          
+                      <div className="place-meta">
+                        <h3 className="place-name">{place.name}</h3>
+                        <p className="place-desc">
+                          {place.tag && place.tag.length > 0
+                            ? place.tag.join(', ')
+                            : (place.address || 'Address not available')}
+                        </p>
+                        <p className="place-address">
+                          📍 {place.distance ? place.distance.toFixed(2) + ' km' : ''}
+                        </p>
+                      </div>
+                      <button
+                        className="place-fav-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(place.id);
+                        }}
+                        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <img
+                          src={isFavorite ? '/fullHeart.png' : '/emptyHeart.svg'}
+                          alt="favorite"
+                          className="favorite-icon"
+                        />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             ) : (
               viewFavorites ? (
                 <div className="empty-state">
                   <div className="empty-icon-wrapper">
                     <span className="empty-icon-emoji" role="img" aria-label="Broken heart">💔</span>
                   </div>
-                  <h3 className="empty-title">You haven't added any favorite places yet!</h3> 
-                  <p className="empty-subtext">Tap the heart icon on places you like to save them.</p> 
+                  <h3 className="empty-title">You haven't added any favorite places yet!</h3>
+                  <p className="empty-subtext">Tap the heart icon on places you like to save them.</p>
                 </div>
               ) : (
-                <p className="empty-message">
-                   'No places found nearby or could not be found.'
-                </p>
+                !isInitialLoading && (
+                  <p className="empty-message">
+                    Finding places to visit...
+                  </p>
+                )
               )
             )}
+
             {canLoadMore && !isLoadingMore && (
               <button onClick={handleLoadMore} className="load-more-button">
                 Load More
               </button>
             )}
-            {isLoadingMore && <div className="loading-indicator"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading more..." /></div>} 
+            {isLoadingMore && (
+              <div className="loading-indicator">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
+                  alt="Loading more..."
+                />
+              </div>
+            )}
           </div>
         )}
       </CustomBottomSheet>
@@ -620,7 +690,7 @@ export default function Lobby() {
           onClick={() => { setViewFavorites(false); setCurrentPage(1); }}
         >
           <img src="/maps_black.png" alt="Maps" />
-          <p>Maps</p> 
+          <p>Maps</p>
         </button>
         <button
           className={`nav-btn ${viewFavorites ? 'selected' : ''}`}
@@ -631,11 +701,11 @@ export default function Lobby() {
             style={{ width: 23, height: 23 }}
             alt="Favorite"
           />
-          <p>Favorites</p> 
+          <p>Favorites</p>
         </button>
         <button className="nav-btn" onClick={() => navigate('/language')}>
           <img src="/menu alt.png" alt="Menu" />
-          <p>Settings</p> 
+          <p>Settings</p>
         </button>
       </nav>
     </div>
